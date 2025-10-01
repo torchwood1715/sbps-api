@@ -1,0 +1,5 @@
+server:
+  port: 8080
+
+device:
+  url: ${DEVICE_URL:http://localhost:8081}
