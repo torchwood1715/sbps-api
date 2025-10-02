@@ -1,5 +1,6 @@
 package com.yh.sbps.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity
@@ -14,6 +15,7 @@ public class Device {
   private String name;
 
   @Column(name = "mqtt_prefix", nullable = false)
+  @JsonProperty("mqtt_prefix")
   private String mqttPrefix;
 
   @Column(name = "type", nullable = false)
