@@ -24,13 +24,17 @@ public class Device {
   @Column(name = "priority")
   private Integer priority = 0;
 
+  @Column(name = "wattage")
+  private Integer wattage;
+
   public Device() {}
 
-  public Device(String name, String mqttPrefix, String type, Integer priority) {
+  public Device(String name, String mqttPrefix, String type, Integer priority, Integer wattage) {
     this.name = name;
     this.mqttPrefix = mqttPrefix;
     this.type = type;
     this.priority = priority;
+    this.wattage = wattage;
   }
 
   public Long getId() {
@@ -71,5 +75,13 @@ public class Device {
 
   public void setPriority(Integer priority) {
     this.priority = priority;
+  }
+
+  public Integer getWattage() {
+    return wattage;
+  }
+
+  public void setWattage(Integer wattage) {
+    this.wattage = wattage;
   }
 }

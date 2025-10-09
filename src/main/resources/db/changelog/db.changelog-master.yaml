@@ -32,3 +32,13 @@ databaseChangeLog:
                   name: priority
                   type: INTEGER
                   defaultValue: 0
+  - changeSet:
+      id: 2
+      author: system
+      changes:
+        - addColumn:
+            tableName: devices
+            columns:
+              - column:
+                  name: wattage
+                  type: INTEGER

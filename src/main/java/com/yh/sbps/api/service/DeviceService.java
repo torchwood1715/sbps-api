@@ -39,6 +39,7 @@ public class DeviceService {
     device.setMqttPrefix(deviceDetails.getMqttPrefix());
     device.setType(deviceDetails.getType());
     device.setPriority(deviceDetails.getPriority());
+    device.setWattage(deviceDetails.getWattage());
 
     return deviceRepository.save(device);
   }
