@@ -1,6 +1,7 @@
 package com.yh.sbps.api.service;
 
 import com.yh.sbps.api.entity.Device;
+import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.repository.DeviceRepository;
 import java.util.List;
 import java.util.Optional;
@@ -17,23 +18,28 @@ public class DeviceService {
     this.deviceRepository = deviceRepository;
   }
 
-  public List<Device> getAllDevices() {
-    return deviceRepository.findAll();
+  public List<Device> getAllDevices(User user) {
+    return deviceRepository.findAllByUser(user);
   }
 
   public Optional<Device> getDeviceById(Long id) {
     return deviceRepository.findById(id);
   }
 
-  public Device saveDevice(Device device) {
+  public Device saveDevice(Device device, User user) {
+    device.setUser(user);
     return deviceRepository.save(device);
   }
 
-  public Device updateDevice(Long id, Device deviceDetails) {
+  public Device updateDevice(Long id, Device deviceDetails, User user) {
     Device device =
         deviceRepository
             .findById(id)
             .orElseThrow(() -> new RuntimeException("Device not found with id: " + id));
+
+    if (device.getUser() == null || !device.getUser().getId().equals(user.getId())) {
+      throw new RuntimeException("You can only update your own devices");
+    }
 
     device.setName(deviceDetails.getName());
     device.setMqttPrefix(deviceDetails.getMqttPrefix());
@@ -44,10 +50,15 @@ public class DeviceService {
     return deviceRepository.save(device);
   }
 
-  public void deleteDevice(Long id) {
-    if (!deviceRepository.existsById(id)) {
-      throw new RuntimeException("Device not found with id: " + id);
+  public void deleteDevice(Long id, User user) {
+    Device device = deviceRepository
+        .findById(id)
+        .orElseThrow(() -> new RuntimeException("Device not found with id: " + id));
+
+    if (device.getUser() == null || !device.getUser().getId().equals(user.getId())) {
+      throw new RuntimeException("You can only delete your own devices");
     }
+
     deviceRepository.deleteById(id);
   }
 }

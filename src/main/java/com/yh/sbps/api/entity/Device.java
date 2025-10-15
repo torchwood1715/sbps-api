@@ -27,6 +27,10 @@ public class Device {
   @Column(name = "wattage")
   private Integer wattage;
 
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private User user;
+
   public Device() {}
 
   public Device(String name, String mqttPrefix, String type, Integer priority, Integer wattage) {
@@ -35,6 +39,16 @@ public class Device {
     this.type = type;
     this.priority = priority;
     this.wattage = wattage;
+  }
+
+  public Device(
+      String name, String mqttPrefix, String type, Integer priority, Integer wattage, User user) {
+    this.name = name;
+    this.mqttPrefix = mqttPrefix;
+    this.type = type;
+    this.priority = priority;
+    this.wattage = wattage;
+    this.user = user;
   }
 
   public Long getId() {
@@ -83,5 +97,13 @@ public class Device {
 
   public void setWattage(Integer wattage) {
     this.wattage = wattage;
+  }
+
+  public User getUser() {
+    return user;
+  }
+
+  public void setUser(User user) {
+    this.user = user;
   }
 }

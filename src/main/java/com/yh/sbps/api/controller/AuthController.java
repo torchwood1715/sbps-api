@@ -13,30 +13,30 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService authService;
+  private final AuthService authService;
 
-    @Autowired
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
+  @Autowired
+  public AuthController(AuthService authService) {
+    this.authService = authService;
+  }
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponseDto> register(@RequestBody RegisterRequestDto request) {
-        try {
-            AuthResponseDto response = authService.register(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+  @PostMapping("/register")
+  public ResponseEntity<AuthResponseDto> register(@RequestBody RegisterRequestDto request) {
+    try {
+      AuthResponseDto response = authService.register(request);
+      return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    } catch (RuntimeException e) {
+      return ResponseEntity.badRequest().build();
     }
+  }
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(@RequestBody LoginRequestDto request) {
-        try {
-            AuthResponseDto response = authService.login(request);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+  @PostMapping("/login")
+  public ResponseEntity<AuthResponseDto> login(@RequestBody LoginRequestDto request) {
+    try {
+      AuthResponseDto response = authService.login(request);
+      return ResponseEntity.ok(response);
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+  }
 }

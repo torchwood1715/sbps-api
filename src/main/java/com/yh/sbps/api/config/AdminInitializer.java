@@ -12,35 +12,33 @@ import org.springframework.stereotype.Component;
 @Component
 public class AdminInitializer implements CommandLineRunner {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
 
-    @Value("${admin.email}")
-    private String adminEmail;
+  @Value("${admin.email}")
+  private String adminEmail;
 
-    @Value("${admin.password}")
-    private String adminPassword;
+  @Value("${admin.password}")
+  private String adminPassword;
 
-    @Autowired
-    public AdminInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+  @Autowired
+  public AdminInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
+  }
+
+  @Override
+  public void run(String... args) throws Exception {
+    if (userRepository.findByEmail(adminEmail).isEmpty()) {
+      User adminUser = new User();
+      adminUser.setEmail(adminEmail);
+      adminUser.setPassword(passwordEncoder.encode(adminPassword));
+      adminUser.setRole(Role.ADMIN);
+
+      userRepository.save(adminUser);
+      System.out.println("Admin user created with email: " + adminEmail);
+    } else {
+      System.out.println("Admin user already exists with email: " + adminEmail);
     }
-
-    @Override
-    public void run(String... args) throws Exception {
-        // Check if an admin user already exists
-        if (userRepository.findByEmail(adminEmail).isEmpty()) {
-            // Create a new admin user
-            User adminUser = new User();
-            adminUser.setEmail(adminEmail);
-            adminUser.setPassword(passwordEncoder.encode(adminPassword));
-            adminUser.setRole(Role.ADMIN);
-            
-            userRepository.save(adminUser);
-            System.out.println("Admin user created with email: " + adminEmail);
-        } else {
-            System.out.println("Admin user already exists with email: " + adminEmail);
-        }
-    }
+  }
 }

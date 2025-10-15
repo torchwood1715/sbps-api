@@ -72,3 +72,21 @@ databaseChangeLog:
                   type: VARCHAR(50)
                   constraints:
                     nullable: false
+  - changeSet:
+      id: 4
+      author: system
+      changes:
+        - addColumn:
+            tableName: devices
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseTableName: devices
+            baseColumnNames: user_id
+            constraintName: fk_devices_user_id
+            referencedTableName: users
+            referencedColumnNames: id

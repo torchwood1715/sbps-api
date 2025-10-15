@@ -1,8 +1,13 @@
 package com.yh.sbps.api.repository;
 
 import com.yh.sbps.api.entity.Device;
+import com.yh.sbps.api.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public interface DeviceRepository extends JpaRepository<Device, Long> {}
+public interface DeviceRepository extends JpaRepository<Device, Long> {
+  List<Device> findAllByUser(User user);
+}

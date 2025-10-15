@@ -1,12 +1,14 @@
 package com.yh.sbps.api.controller;
 
 import com.yh.sbps.api.entity.Device;
+import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.service.DeviceService;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,8 +23,8 @@ public class DeviceController {
   }
 
   @GetMapping
-  public ResponseEntity<List<Device>> getAllDevices() {
-    List<Device> devices = deviceService.getAllDevices();
+  public ResponseEntity<List<Device>> getAllDevices(@AuthenticationPrincipal User user) {
+    List<Device> devices = deviceService.getAllDevices(user);
     return ResponseEntity.ok(devices);
   }
 
@@ -33,9 +35,10 @@ public class DeviceController {
   }
 
   @PostMapping
-  public ResponseEntity<Device> createDevice(@RequestBody Device device) {
+  public ResponseEntity<Device> createDevice(
+      @RequestBody Device device, @AuthenticationPrincipal User user) {
     try {
-      Device savedDevice = deviceService.saveDevice(device);
+      Device savedDevice = deviceService.saveDevice(device, user);
       return ResponseEntity.status(HttpStatus.CREATED).body(savedDevice);
     } catch (Exception e) {
       return ResponseEntity.badRequest().build();
@@ -44,9 +47,11 @@ public class DeviceController {
 
   @PutMapping("/{id}")
   public ResponseEntity<Device> updateDevice(
-      @PathVariable Long id, @RequestBody Device deviceDetails) {
+      @PathVariable Long id,
+      @RequestBody Device deviceDetails,
+      @AuthenticationPrincipal User user) {
     try {
-      Device updatedDevice = deviceService.updateDevice(id, deviceDetails);
+      Device updatedDevice = deviceService.updateDevice(id, deviceDetails, user);
       return ResponseEntity.ok(updatedDevice);
     } catch (RuntimeException e) {
       return ResponseEntity.notFound().build();
@@ -56,9 +61,10 @@ public class DeviceController {
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteDevice(@PathVariable Long id) {
+  public ResponseEntity<Void> deleteDevice(
+      @PathVariable Long id, @AuthenticationPrincipal User user) {
     try {
-      deviceService.deleteDevice(id);
+      deviceService.deleteDevice(id, user);
       return ResponseEntity.noContent().build();
     } catch (RuntimeException e) {
       return ResponseEntity.notFound().build();
