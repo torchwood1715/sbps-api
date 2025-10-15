@@ -21,6 +21,12 @@ public class AdminInitializer implements CommandLineRunner {
   @Value("${admin.password}")
   private String adminPassword;
 
+  @Value("${service-user.email}")
+  private String serviceUserEmail;
+
+  @Value("${service-user.password}")
+  private String serviceUserPassword;
+
   @Autowired
   public AdminInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
@@ -29,6 +35,11 @@ public class AdminInitializer implements CommandLineRunner {
 
   @Override
   public void run(String... args) throws Exception {
+    createAdminUser();
+    createServiceUser();
+  }
+
+  private void createAdminUser() {
     if (userRepository.findByEmail(adminEmail).isEmpty()) {
       User adminUser = new User();
       adminUser.setEmail(adminEmail);
@@ -36,9 +47,19 @@ public class AdminInitializer implements CommandLineRunner {
       adminUser.setRole(Role.ADMIN);
 
       userRepository.save(adminUser);
-      System.out.println("Admin user created with email: " + adminEmail);
-    } else {
-      System.out.println("Admin user already exists with email: " + adminEmail);
+      System.out.println("Admin user created: " + adminEmail);
+    }
+  }
+
+  private void createServiceUser() {
+    if (userRepository.findByEmail(serviceUserEmail).isEmpty()) {
+      User serviceUser = new User();
+      serviceUser.setEmail(serviceUserEmail);
+      serviceUser.setPassword(passwordEncoder.encode(serviceUserPassword));
+      serviceUser.setRole(Role.SERVICE_USER);
+
+      userRepository.save(serviceUser);
+      System.out.println("Service user created: " + serviceUserEmail);
     }
   }
 }

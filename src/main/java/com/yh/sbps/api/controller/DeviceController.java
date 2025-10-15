@@ -1,5 +1,6 @@
 package com.yh.sbps.api.controller;
 
+import com.yh.sbps.api.dto.SystemStateDto;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.service.DeviceService;
@@ -68,6 +69,17 @@ public class DeviceController {
       return ResponseEntity.noContent().build();
     } catch (RuntimeException e) {
       return ResponseEntity.notFound().build();
+    }
+  }
+
+  @GetMapping("/by-mqtt-prefix/{mqttPrefix}")
+  public ResponseEntity<SystemStateDto> getSystemStateByMqttPrefix(
+      @PathVariable String mqttPrefix, @AuthenticationPrincipal User user) {
+    try {
+      SystemStateDto state = deviceService.getSystemStateByMqttPrefix(mqttPrefix);
+      return ResponseEntity.ok(state);
+    } catch (RuntimeException e) {
+      return ResponseEntity.internalServerError().build();
     }
   }
 }

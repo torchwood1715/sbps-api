@@ -26,3 +26,7 @@ jwt:
 admin:
   email: ${ADMIN_EMAIL}
   password: ${ADMIN_PASSWORD}
+
+service-user:
+  email: ${SERVICE_USER_EMAIL}
+  password: ${SERVICE_USER_PASSWORD}
