@@ -1,0 +1,12 @@
+package com.yh.sbps.api.repository;
+
+import com.yh.sbps.api.entity.SystemSettings;
+import com.yh.sbps.api.entity.User;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface SystemSettingsRepository extends JpaRepository<SystemSettings, Long> {
+  Optional<SystemSettings> findByUser(User user);
+}

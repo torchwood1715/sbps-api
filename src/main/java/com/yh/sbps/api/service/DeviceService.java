@@ -43,7 +43,7 @@ public class DeviceService {
 
     device.setName(deviceDetails.getName());
     device.setMqttPrefix(deviceDetails.getMqttPrefix());
-    device.setType(deviceDetails.getType());
+    device.setDeviceType(deviceDetails.getDeviceType());
     device.setPriority(deviceDetails.getPriority());
     device.setWattage(deviceDetails.getWattage());
 
@@ -51,9 +51,10 @@ public class DeviceService {
   }
 
   public void deleteDevice(Long id, User user) {
-    Device device = deviceRepository
-        .findById(id)
-        .orElseThrow(() -> new RuntimeException("Device not found with id: " + id));
+    Device device =
+        deviceRepository
+            .findById(id)
+            .orElseThrow(() -> new RuntimeException("Device not found with id: " + id));
 
     if (device.getUser() == null || !device.getUser().getId().equals(user.getId())) {
       throw new RuntimeException("You can only delete your own devices");

@@ -18,8 +18,9 @@ public class Device {
   @JsonProperty("mqtt_prefix")
   private String mqttPrefix;
 
-  @Column(name = "type", nullable = false)
-  private String type;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "device_type", nullable = false)
+  private DeviceType deviceType;
 
   @Column(name = "priority")
   private Integer priority = 0;
@@ -32,24 +33,6 @@ public class Device {
   private User user;
 
   public Device() {}
-
-  public Device(String name, String mqttPrefix, String type, Integer priority, Integer wattage) {
-    this.name = name;
-    this.mqttPrefix = mqttPrefix;
-    this.type = type;
-    this.priority = priority;
-    this.wattage = wattage;
-  }
-
-  public Device(
-      String name, String mqttPrefix, String type, Integer priority, Integer wattage, User user) {
-    this.name = name;
-    this.mqttPrefix = mqttPrefix;
-    this.type = type;
-    this.priority = priority;
-    this.wattage = wattage;
-    this.user = user;
-  }
 
   public Long getId() {
     return id;
@@ -75,12 +58,12 @@ public class Device {
     this.mqttPrefix = mqttPrefix;
   }
 
-  public String getType() {
-    return type;
+  public DeviceType getDeviceType() {
+    return deviceType;
   }
 
-  public void setType(String type) {
-    this.type = type;
+  public void setDeviceType(DeviceType deviceType) {
+    this.deviceType = deviceType;
   }
 
   public Integer getPriority() {
