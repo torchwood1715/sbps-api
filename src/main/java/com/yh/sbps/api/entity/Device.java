@@ -15,7 +15,6 @@ public class Device {
   private String name;
 
   @Column(name = "mqtt_prefix", nullable = false)
-  @JsonProperty("mqtt_prefix")
   private String mqttPrefix;
 
   @Enumerated(EnumType.STRING)
