@@ -10,12 +10,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
-  h2:
-    console:
-      enabled: true
 
 device:
   url: ${DEVICE_URL:http://localhost:8081}
