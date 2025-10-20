@@ -1,7 +1,13 @@
 package com.yh.sbps.api.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Setter
+@Getter
+@NoArgsConstructor
 @Entity
 @Table(name = "system_settings")
 public class SystemSettings {
@@ -23,8 +29,6 @@ public class SystemSettings {
   @JoinColumn(name = "user_id", referencedColumnName = "id")
   private User user;
 
-  public SystemSettings() {}
-
   public SystemSettings(
       Integer powerLimitWatts,
       Integer powerOnMarginWatts,
@@ -33,46 +37,6 @@ public class SystemSettings {
     this.powerLimitWatts = powerLimitWatts;
     this.powerOnMarginWatts = powerOnMarginWatts;
     this.overloadCooldownSeconds = overloadCooldownSeconds;
-    this.user = user;
-  }
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public Integer getPowerLimitWatts() {
-    return powerLimitWatts;
-  }
-
-  public void setPowerLimitWatts(Integer powerLimitWatts) {
-    this.powerLimitWatts = powerLimitWatts;
-  }
-
-  public Integer getPowerOnMarginWatts() {
-    return powerOnMarginWatts;
-  }
-
-  public void setPowerOnMarginWatts(Integer powerOnMarginWatts) {
-    this.powerOnMarginWatts = powerOnMarginWatts;
-  }
-
-  public Integer getOverloadCooldownSeconds() {
-    return overloadCooldownSeconds;
-  }
-
-  public void setOverloadCooldownSeconds(Integer overloadCooldownSeconds) {
-    this.overloadCooldownSeconds = overloadCooldownSeconds;
-  }
-
-  public User getUser() {
-    return user;
-  }
-
-  public void setUser(User user) {
     this.user = user;
   }
 }

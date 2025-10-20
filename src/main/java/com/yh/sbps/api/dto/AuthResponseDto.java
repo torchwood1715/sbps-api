@@ -1,19 +1,14 @@
 package com.yh.sbps.api.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class AuthResponseDto {
   private String token;
-
-  public AuthResponseDto() {}
-
-  public AuthResponseDto(String token) {
-    this.token = token;
-  }
-
-  public String getToken() {
-    return token;
-  }
-
-  public void setToken(String token) {
-    this.token = token;
-  }
 }

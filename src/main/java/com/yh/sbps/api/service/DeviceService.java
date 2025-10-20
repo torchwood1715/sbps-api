@@ -1,9 +1,12 @@
 package com.yh.sbps.api.service;
 
+import static com.yh.sbps.api.entity.Role.SERVICE_USER;
+
 import com.yh.sbps.api.dto.SystemStateDto;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.SystemSettings;
 import com.yh.sbps.api.entity.User;
+import com.yh.sbps.api.integration.DeviceServiceWS;
 import com.yh.sbps.api.repository.DeviceRepository;
 import com.yh.sbps.api.repository.SystemSettingsRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,15 +20,22 @@ public class DeviceService {
 
   private final DeviceRepository deviceRepository;
   private final SystemSettingsRepository systemSettingsRepository;
+  private final DeviceServiceWS deviceServiceWS;
 
   @Autowired
   public DeviceService(
-      DeviceRepository deviceRepository, SystemSettingsRepository systemSettingsRepository) {
+      DeviceRepository deviceRepository,
+      SystemSettingsRepository systemSettingsRepository,
+      DeviceServiceWS deviceServiceWS) {
     this.deviceRepository = deviceRepository;
     this.systemSettingsRepository = systemSettingsRepository;
+    this.deviceServiceWS = deviceServiceWS;
   }
 
   public List<Device> getAllDevices(User user) {
+    if (user.getRole() == SERVICE_USER) {
+      return deviceRepository.findAll();
+    }
     return deviceRepository.findAllByUser(user);
   }
 
@@ -35,7 +45,9 @@ public class DeviceService {
 
   public Device saveDevice(Device device, User user) {
     device.setUser(user);
-    return deviceRepository.save(device);
+    Device saved = deviceRepository.save(device);
+    deviceServiceWS.notifyDeviceUpdate(saved);
+    return saved;
   }
 
   public Device updateDevice(Long id, Device deviceDetails, User user) {
@@ -54,7 +66,9 @@ public class DeviceService {
     device.setPriority(deviceDetails.getPriority());
     device.setWattage(deviceDetails.getWattage());
 
-    return deviceRepository.save(device);
+    Device saved = deviceRepository.save(device);
+    deviceServiceWS.notifyDeviceUpdate(saved);
+    return saved;
   }
 
   public void deleteDevice(Long id, User user) {
