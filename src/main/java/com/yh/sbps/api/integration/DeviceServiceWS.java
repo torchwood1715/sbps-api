@@ -60,7 +60,7 @@ public class DeviceServiceWS {
     try {
       // Використовуємо exchange замість getForEntity
       return restTemplate.exchange(url, HttpMethod.GET, null, Boolean.class);
-    } catch (RestClientException e) {
+    } catch (Throwable e) {
       logger.error(
           "Error calling device-service online for ID {}: {}", deviceId, e.getMessage(), e);
       throw new ResponseStatusException(
