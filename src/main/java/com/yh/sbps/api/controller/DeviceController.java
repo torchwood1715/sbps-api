@@ -4,6 +4,7 @@ import com.yh.sbps.api.dto.SystemStateDto;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.service.DeviceService;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +79,8 @@ public class DeviceController {
     try {
       SystemStateDto state = deviceService.getSystemStateByMqttPrefix(mqttPrefix);
       return ResponseEntity.ok(state);
+    } catch (EntityNotFoundException e) {
+      return ResponseEntity.notFound().build();
     } catch (RuntimeException e) {
       return ResponseEntity.internalServerError().build();
     }
