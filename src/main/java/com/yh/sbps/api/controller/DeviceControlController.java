@@ -35,7 +35,7 @@ public class DeviceControlController {
     }
   }
 
-  @PostMapping("/plug/{deviceId}/status")
+  @GetMapping("/plug/{deviceId}/status")
   public ResponseEntity<?> getStatus(
       @AuthenticationPrincipal User user, @PathVariable Long deviceId) {
     if (!canAccessDevice(user, deviceId)) {
@@ -48,7 +48,7 @@ public class DeviceControlController {
     }
   }
 
-  @PostMapping("/plug/{deviceId}/online")
+  @GetMapping("/plug/{deviceId}/online")
   public ResponseEntity<?> getOnline(
       @AuthenticationPrincipal User user, @PathVariable Long deviceId) {
     if (!canAccessDevice(user, deviceId)) {
@@ -61,7 +61,7 @@ public class DeviceControlController {
     }
   }
 
-  @PostMapping("/plug/{deviceId}/events")
+  @GetMapping("/plug/{deviceId}/events")
   public ResponseEntity<?> getEvents(
       @AuthenticationPrincipal User user, @PathVariable Long deviceId) {
     if (!canAccessDevice(user, deviceId)) {

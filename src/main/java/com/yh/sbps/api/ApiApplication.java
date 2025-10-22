@@ -3,7 +3,6 @@ package com.yh.sbps.api;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @SpringBootApplication
@@ -14,12 +13,7 @@ public class ApiApplication {
   }
 
   @Bean
-  public RestTemplate restTemplate() {
-    return new RestTemplate();
-  }
-
-  @Bean
-  public WebClient webClient() {
-    return WebClient.create();
+  public WebClient webClient(WebClient.Builder builder) {
+    return builder.build();
   }
 }
