@@ -7,9 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
 @Component
 public class DeviceServiceWS {
@@ -46,30 +44,16 @@ public class DeviceServiceWS {
 
   public ResponseEntity<JsonNode> getStatus(Long deviceId) {
     String url = deviceServiceUrl + "/api/device/plug/" + deviceId + "/status";
-    try {
-      return restTemplate.getForEntity(url, JsonNode.class);
-    } catch (Exception e) {
-      logger.error("Failed to get status for device: {}", deviceId, e);
-      throw e;
-    }
+    return restTemplate.exchange(url, HttpMethod.POST, null, JsonNode.class);
   }
 
   public ResponseEntity<Boolean> getOnline(Long deviceId) {
     String url = deviceServiceUrl + "/api/device/plug/" + deviceId + "/online";
-    logger.info("Attempting to call device-service GET online at: {}", url);
-    try {
-      // Використовуємо exchange замість getForEntity
-      return restTemplate.exchange(url, HttpMethod.GET, null, Boolean.class);
-    } catch (Throwable e) {
-      logger.error(
-          "Error calling device-service online for ID {}: {}", deviceId, e.getMessage(), e);
-      throw new ResponseStatusException(
-          HttpStatus.INTERNAL_SERVER_ERROR, "Failed to get online status from device-service", e);
-    }
+    return restTemplate.exchange(url, HttpMethod.POST, null, Boolean.class);
   }
 
   public ResponseEntity<JsonNode> getEvents(Long deviceId) {
     String url = deviceServiceUrl + "/api/device/plug/" + deviceId + "/events";
-    return restTemplate.getForEntity(url, JsonNode.class);
+    return restTemplate.exchange(url, HttpMethod.POST, null, JsonNode.class);
   }
 }
