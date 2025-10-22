@@ -26,3 +26,7 @@ admin:
 service-user:
   email: ${SERVICE_USER_EMAIL}
   password: ${SERVICE_USER_PASSWORD}
+logging:
+  level:
+    org.springframework.web.client.RestTemplate: DEBUG
+    org.apache.hc.client5.http: DEBUG
