@@ -36,9 +36,15 @@ public class AuthService {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
       throw new RuntimeException("User already exists with email: " + request.getEmail());
     }
-
+    if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+      throw new RuntimeException("Username already taken: " + request.getUsername());
+    }
     User user =
-        new User(request.getEmail(), passwordEncoder.encode(request.getPassword()), Role.USER);
+        new User(
+            request.getEmail(),
+            passwordEncoder.encode(request.getPassword()),
+            request.getUsername(),
+            Role.USER);
 
     userRepository.save(user);
 
@@ -48,13 +54,13 @@ public class AuthService {
   }
 
   public AuthResponseDto login(LoginRequestDto request) {
-    authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-
     User user =
         userRepository
             .findByEmail(request.getEmail())
             .orElseThrow(() -> new RuntimeException("User not found"));
+
+    authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(user.getUsername(), request.getPassword()));
 
     String token = jwtService.generateToken(user);
 

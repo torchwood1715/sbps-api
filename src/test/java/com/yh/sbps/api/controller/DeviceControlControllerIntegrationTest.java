@@ -47,7 +47,7 @@ class DeviceControlControllerIntegrationTest {
 
   @BeforeEach
   void setUp() {
-    testUser = new User("test@example.com", "password", Role.USER);
+    testUser = new User("test@example.com", "test", "password", Role.USER);
     testUser.setId(1L);
 
     testDevice = new Device();
@@ -83,7 +83,7 @@ class DeviceControlControllerIntegrationTest {
   @DisplayName("Should return 403 when user doesn't own device")
   void togglePlug_UserDoesNotOwnDevice_ReturnsForbidden() throws Exception {
     // Arrange
-    User otherUser = new User("other@example.com", "password", Role.USER);
+    User otherUser = new User("other@example.com", "other", "password", Role.USER);
     otherUser.setId(2L);
 
     when(deviceService.getDeviceById(1L)).thenReturn(Optional.of(testDevice));
@@ -170,7 +170,7 @@ class DeviceControlControllerIntegrationTest {
   @DisplayName("Should return 403 for online status when user doesn't own device")
   void getOnline_UserDoesNotOwnDevice_ReturnsForbidden() throws Exception {
     // Arrange
-    User otherUser = new User("other@example.com", "password", Role.USER);
+    User otherUser = new User("other@example.com", "other", "password", Role.USER);
     otherUser.setId(2L);
 
     when(deviceService.getDeviceById(1L)).thenReturn(Optional.of(testDevice));
@@ -206,7 +206,7 @@ class DeviceControlControllerIntegrationTest {
   @DisplayName("Should return 403 for events when user doesn't own device")
   void getEvents_UserDoesNotOwnDevice_ReturnsForbidden() throws Exception {
     // Arrange
-    User otherUser = new User("other@example.com", "password", Role.USER);
+    User otherUser = new User("other@example.com", "other", "password", Role.USER);
     otherUser.setId(2L);
 
     when(deviceService.getDeviceById(1L)).thenReturn(Optional.of(testDevice));

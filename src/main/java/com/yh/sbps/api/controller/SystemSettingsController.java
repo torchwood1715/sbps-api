@@ -1,5 +1,6 @@
 package com.yh.sbps.api.controller;
 
+import com.yh.sbps.api.dto.SystemSettingsDTO;
 import com.yh.sbps.api.entity.SystemSettings;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.service.SystemSettingsService;
@@ -19,16 +20,16 @@ public class SystemSettingsController {
     this.systemSettingsService = systemSettingsService;
   }
 
-  @GetMapping("/")
-  public ResponseEntity<SystemSettings> getSettings(@AuthenticationPrincipal User user) {
-    SystemSettings settings = systemSettingsService.getSettings(user);
+  @GetMapping
+  public ResponseEntity<SystemSettingsDTO> getSettings(@AuthenticationPrincipal User user) {
+    SystemSettingsDTO settings = systemSettingsService.getSettings(user);
     return ResponseEntity.ok(settings);
   }
 
-  @PutMapping("/")
-  public ResponseEntity<SystemSettings> updateSettings(
-      @AuthenticationPrincipal User user, @RequestBody SystemSettings newSettings) {
-    SystemSettings updatedSettings = systemSettingsService.updateSettings(user, newSettings);
+  @PutMapping
+  public ResponseEntity<SystemSettingsDTO> updateSettings(
+      @AuthenticationPrincipal User user, @RequestBody SystemSettingsDTO newSettings) {
+    SystemSettingsDTO updatedSettings = systemSettingsService.updateSettings(user, newSettings);
     return ResponseEntity.ok(updatedSettings);
   }
 }

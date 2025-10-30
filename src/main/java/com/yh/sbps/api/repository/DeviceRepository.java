@@ -1,6 +1,7 @@
 package com.yh.sbps.api.repository;
 
 import com.yh.sbps.api.entity.Device;
+import com.yh.sbps.api.entity.DeviceType;
 import com.yh.sbps.api.entity.User;
 import java.util.List;
 import java.util.Optional;
@@ -11,5 +12,9 @@ import org.springframework.stereotype.Repository;
 public interface DeviceRepository extends JpaRepository<Device, Long> {
   List<Device> findAllByUser(User user);
 
+  List<Device> findAllByUserOrderByDeviceTypeAscNameAsc(User user);
+
   Optional<Device> findByMqttPrefix(String mqttPrefix);
+
+  boolean existsByUserAndDeviceType(User user, DeviceType deviceType);
 }

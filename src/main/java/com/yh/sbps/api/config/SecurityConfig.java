@@ -91,7 +91,7 @@ public class SecurityConfig {
   public UserDetailsService userDetailsService() {
     return username ->
         userRepository
-            .findByEmail(username)
+            .findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("User not found"));
   }
 

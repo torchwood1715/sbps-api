@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.yh.sbps.api.dto.SystemSettingsDTO;
+import com.yh.sbps.api.dto.mapper.SystemSettingsMapper;
 import com.yh.sbps.api.entity.Role;
 import com.yh.sbps.api.entity.SystemSettings;
 import com.yh.sbps.api.entity.User;
@@ -13,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -22,15 +23,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SystemSettingsServiceTest {
 
   @Mock private SystemSettingsRepository systemSettingsRepository;
-
-  @InjectMocks private SystemSettingsService systemSettingsService;
-
+  private SystemSettingsService systemSettingsService;
   private User testUser;
   private SystemSettings testSettings;
+  private SystemSettingsDTO testSettingsDTO;
 
   @BeforeEach
   void setUp() {
-    testUser = new User("test@example.com", "password", Role.USER);
+    systemSettingsService =
+        new SystemSettingsService(new SystemSettingsMapper(), systemSettingsRepository);
+
+    testUser = new User("test@example.com", "test", "password", Role.USER);
     testUser.setId(1L);
 
     testSettings = new SystemSettings();
@@ -39,6 +42,11 @@ class SystemSettingsServiceTest {
     testSettings.setPowerOnMarginWatts(500);
     testSettings.setOverloadCooldownSeconds(30);
     testSettings.setUser(testUser);
+
+    testSettingsDTO = new SystemSettingsDTO();
+    testSettingsDTO.setPowerLimitWatts(3500);
+    testSettingsDTO.setPowerOnMarginWatts(500);
+    testSettingsDTO.setOverloadCooldownSeconds(30);
   }
 
   @Test
@@ -48,11 +56,16 @@ class SystemSettingsServiceTest {
     when(systemSettingsRepository.findByUser(testUser)).thenReturn(Optional.of(testSettings));
 
     // Act
-    SystemSettings result = systemSettingsService.getSettings(testUser);
+    SystemSettingsDTO result = systemSettingsService.getSettings(testUser);
 
     // Assert
     assertNotNull(result);
-    assertEquals(testSettings, result);
+    assertAll(
+        () -> assertEquals(testSettingsDTO.getPowerLimitWatts(), result.getPowerLimitWatts()),
+        () -> assertEquals(testSettingsDTO.getPowerOnMarginWatts(), result.getPowerOnMarginWatts()),
+        () ->
+            assertEquals(
+                testSettingsDTO.getOverloadCooldownSeconds(), result.getOverloadCooldownSeconds()));
     assertEquals(3500, result.getPowerLimitWatts());
     assertEquals(500, result.getPowerOnMarginWatts());
     assertEquals(30, result.getOverloadCooldownSeconds());
@@ -69,14 +82,13 @@ class SystemSettingsServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
 
     // Act
-    SystemSettings result = systemSettingsService.getSettings(testUser);
+    SystemSettingsDTO result = systemSettingsService.getSettings(testUser);
 
     // Assert
     assertNotNull(result);
     assertEquals(3500, result.getPowerLimitWatts());
     assertEquals(500, result.getPowerOnMarginWatts());
     assertEquals(30, result.getOverloadCooldownSeconds());
-    assertEquals(testUser, result.getUser());
     verify(systemSettingsRepository).findByUser(testUser);
     verify(systemSettingsRepository).save(any(SystemSettings.class));
   }
@@ -85,7 +97,7 @@ class SystemSettingsServiceTest {
   @DisplayName("Should update existing settings")
   void updateSettings_ExistingSettings_UpdatesSuccessfully() {
     // Arrange
-    SystemSettings newSettings = new SystemSettings();
+    SystemSettingsDTO newSettings = new SystemSettingsDTO();
     newSettings.setPowerLimitWatts(4000);
     newSettings.setPowerOnMarginWatts(600);
     newSettings.setOverloadCooldownSeconds(45);
@@ -95,14 +107,13 @@ class SystemSettingsServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
 
     // Act
-    SystemSettings result = systemSettingsService.updateSettings(testUser, newSettings);
+    SystemSettingsDTO result = systemSettingsService.updateSettings(testUser, newSettings);
 
     // Assert
     assertNotNull(result);
     assertEquals(4000, result.getPowerLimitWatts());
     assertEquals(600, result.getPowerOnMarginWatts());
     assertEquals(45, result.getOverloadCooldownSeconds());
-    assertEquals(testUser, result.getUser());
     verify(systemSettingsRepository).findByUser(testUser);
     verify(systemSettingsRepository).save(testSettings);
   }
@@ -111,7 +122,7 @@ class SystemSettingsServiceTest {
   @DisplayName("Should create new settings when updating non-existent settings")
   void updateSettings_NoExistingSettings_CreatesNewSettings() {
     // Arrange
-    SystemSettings newSettings = new SystemSettings();
+    SystemSettingsDTO newSettings = new SystemSettingsDTO();
     newSettings.setPowerLimitWatts(4000);
     newSettings.setPowerOnMarginWatts(600);
     newSettings.setOverloadCooldownSeconds(45);
@@ -121,14 +132,13 @@ class SystemSettingsServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
 
     // Act
-    SystemSettings result = systemSettingsService.updateSettings(testUser, newSettings);
+    SystemSettingsDTO result = systemSettingsService.updateSettings(testUser, newSettings);
 
     // Assert
     assertNotNull(result);
     assertEquals(4000, result.getPowerLimitWatts());
     assertEquals(600, result.getPowerOnMarginWatts());
     assertEquals(45, result.getOverloadCooldownSeconds());
-    assertEquals(testUser, result.getUser());
     verify(systemSettingsRepository).findByUser(testUser);
     // Save is called twice: once in createDefaultSettings and once in updateSettings
     verify(systemSettingsRepository, times(2)).save(any(SystemSettings.class));
@@ -138,7 +148,7 @@ class SystemSettingsServiceTest {
   @DisplayName("Should handle null values in update gracefully")
   void updateSettings_NullValues_KeepsExistingValues() {
     // Arrange
-    SystemSettings newSettings = new SystemSettings();
+    SystemSettingsDTO newSettings = new SystemSettingsDTO();
     // All values are null
 
     when(systemSettingsRepository.findByUser(testUser)).thenReturn(Optional.of(testSettings));
@@ -146,7 +156,7 @@ class SystemSettingsServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
 
     // Act
-    SystemSettings result = systemSettingsService.updateSettings(testUser, newSettings);
+    SystemSettingsDTO result = systemSettingsService.updateSettings(testUser, newSettings);
 
     // Assert
     assertNotNull(result);
@@ -154,32 +164,6 @@ class SystemSettingsServiceTest {
     assertNull(result.getPowerLimitWatts());
     assertNull(result.getPowerOnMarginWatts());
     assertNull(result.getOverloadCooldownSeconds());
-    assertEquals(testUser, result.getUser());
-    verify(systemSettingsRepository).save(testSettings);
-  }
-
-  @Test
-  @DisplayName("Should preserve user association in settings")
-  void updateSettings_PreservesUserAssociation() {
-    // Arrange
-    SystemSettings newSettings = new SystemSettings();
-    newSettings.setPowerLimitWatts(5000);
-
-    User differentUser = new User("different@example.com", "password", Role.USER);
-    differentUser.setId(99L);
-    newSettings.setUser(differentUser); // Try to set different user
-
-    when(systemSettingsRepository.findByUser(testUser)).thenReturn(Optional.of(testSettings));
-    when(systemSettingsRepository.save(any(SystemSettings.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
-
-    // Act
-    SystemSettings result = systemSettingsService.updateSettings(testUser, newSettings);
-
-    // Assert
-    assertNotNull(result);
-    assertEquals(testUser, result.getUser()); // Should preserve original user
-    assertNotEquals(differentUser, result.getUser());
     verify(systemSettingsRepository).save(testSettings);
   }
 }

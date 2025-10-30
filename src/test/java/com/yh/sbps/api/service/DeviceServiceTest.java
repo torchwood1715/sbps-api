@@ -4,7 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.yh.sbps.api.dto.DeviceRequestDTO;
 import com.yh.sbps.api.dto.SystemStateDto;
+import com.yh.sbps.api.dto.mapper.DeviceMapper;
+import com.yh.sbps.api.dto.mapper.SystemSettingsMapper;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.DeviceType;
 import com.yh.sbps.api.entity.Role;
@@ -15,13 +18,13 @@ import com.yh.sbps.api.repository.DeviceRepository;
 import com.yh.sbps.api.repository.SystemSettingsRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -35,7 +38,7 @@ class DeviceServiceTest {
 
   @Mock private DeviceServiceWS deviceServiceWS;
 
-  @InjectMocks private DeviceService deviceService;
+  private DeviceService deviceService;
 
   private User testUser;
   private User serviceUser;
@@ -44,10 +47,18 @@ class DeviceServiceTest {
 
   @BeforeEach
   void setUp() {
-    testUser = new User("test@example.com", "password", Role.USER);
+    deviceService =
+        new DeviceService(
+            new DeviceMapper(),
+            new SystemSettingsMapper(),
+            deviceRepository,
+            systemSettingsRepository,
+            deviceServiceWS);
+
+    testUser = new User("test@example.com", "test", "password", Role.USER);
     testUser.setId(1L);
 
-    serviceUser = new User("service@example.com", "password", Role.SERVICE_USER);
+    serviceUser = new User("service@example.com", "service", "password", Role.SERVICE_USER);
     serviceUser.setId(2L);
 
     testDevice = new Device();
@@ -87,16 +98,17 @@ class DeviceServiceTest {
   @DisplayName("Should return user's devices for regular USER")
   void getAllDevices_RegularUser_ReturnsUserDevices() {
     // Arrange
-    List<Device> userDevices = Arrays.asList(testDevice);
-    when(deviceRepository.findAllByUser(testUser)).thenReturn(userDevices);
+    List<Device> userDevices = Collections.singletonList(testDevice);
+    when(deviceRepository.findAllByUserOrderByDeviceTypeAscNameAsc(testUser))
+        .thenReturn(userDevices);
 
     // Act
     List<Device> result = deviceService.getAllDevices(testUser);
 
     // Assert
     assertEquals(1, result.size());
-    assertEquals(testDevice, result.get(0));
-    verify(deviceRepository).findAllByUser(testUser);
+    assertEquals(testDevice, result.getFirst());
+    verify(deviceRepository).findAllByUserOrderByDeviceTypeAscNameAsc(testUser);
     verify(deviceRepository, never()).findAll();
   }
 
@@ -138,24 +150,30 @@ class DeviceServiceTest {
     newDevice.setMqttPrefix("new/device");
     newDevice.setDeviceType(DeviceType.POWER_MONITOR);
 
+    DeviceRequestDTO deviceDto = new DeviceRequestDTO();
+    deviceDto.setName("New Device");
+    deviceDto.setMqttPrefix("new/device");
+    deviceDto.setDeviceType(DeviceType.POWER_MONITOR);
+
     when(deviceRepository.save(any(Device.class))).thenReturn(newDevice);
+    when(deviceRepository.existsByUserAndDeviceType(eq(testUser), eq(DeviceType.POWER_MONITOR)))
+        .thenReturn(false);
     doNothing().when(deviceServiceWS).notifyDeviceUpdate(any(Device.class));
 
     // Act
-    Device result = deviceService.saveDevice(newDevice, testUser);
+    Device result = deviceService.saveDevice(deviceDto, testUser);
 
     // Assert
     assertNotNull(result);
-    assertEquals(testUser, newDevice.getUser());
-    verify(deviceRepository).save(newDevice);
-    verify(deviceServiceWS).notifyDeviceUpdate(newDevice);
+    verify(deviceRepository).save(any(Device.class));
+    verify(deviceServiceWS).notifyDeviceUpdate(any(Device.class));
   }
 
   @Test
   @DisplayName("Should update device and notify device service")
   void updateDevice_ValidDevice_UpdatesAndNotifies() {
     // Arrange
-    Device updatedDetails = new Device();
+    DeviceRequestDTO updatedDetails = new DeviceRequestDTO();
     updatedDetails.setName("Updated Name");
     updatedDetails.setMqttPrefix("updated/prefix");
     updatedDetails.setDeviceType(DeviceType.POWER_MONITOR);
@@ -188,7 +206,8 @@ class DeviceServiceTest {
 
     // Act & Assert
     assertThrows(
-        RuntimeException.class, () -> deviceService.updateDevice(999L, testDevice, testUser));
+        RuntimeException.class,
+        () -> deviceService.updateDevice(999L, new DeviceRequestDTO(), testUser));
     verify(deviceRepository, never()).save(any());
     verify(deviceServiceWS, never()).notifyDeviceUpdate(any());
   }
@@ -197,14 +216,15 @@ class DeviceServiceTest {
   @DisplayName("Should throw exception when updating another user's device")
   void updateDevice_OtherUsersDevice_ThrowsException() {
     // Arrange
-    User otherUser = new User("other@example.com", "password", Role.USER);
+    User otherUser = new User("other@example.com", "other", "password", Role.USER);
     otherUser.setId(99L);
 
     when(deviceRepository.findById(1L)).thenReturn(Optional.of(testDevice));
 
     // Act & Assert
     assertThrows(
-        RuntimeException.class, () -> deviceService.updateDevice(1L, testDevice, otherUser));
+        RuntimeException.class,
+        () -> deviceService.updateDevice(1L, new DeviceRequestDTO(), otherUser));
     verify(deviceRepository, never()).save(any());
     verify(deviceServiceWS, never()).notifyDeviceUpdate(any());
   }
@@ -228,7 +248,7 @@ class DeviceServiceTest {
   @DisplayName("Should throw exception when deleting another user's device")
   void deleteDevice_OtherUsersDevice_ThrowsException() {
     // Arrange
-    User otherUser = new User("other@example.com", "password", Role.USER);
+    User otherUser = new User("other@example.com", "other", "password", Role.USER);
     otherUser.setId(99L);
 
     when(deviceRepository.findById(1L)).thenReturn(Optional.of(testDevice));
@@ -242,7 +262,7 @@ class DeviceServiceTest {
   @DisplayName("Should get system state by MQTT prefix successfully")
   void getSystemStateByMqttPrefix_ValidPrefix_ReturnsSystemState() {
     // Arrange
-    List<Device> userDevices = Arrays.asList(testDevice);
+    List<Device> userDevices = Collections.singletonList(testDevice);
     when(deviceRepository.findByMqttPrefix("test/device")).thenReturn(Optional.of(testDevice));
     when(systemSettingsRepository.findByUser(testUser)).thenReturn(Optional.of(testSettings));
     when(deviceRepository.findAllByUser(testUser)).thenReturn(userDevices);
@@ -252,7 +272,13 @@ class DeviceServiceTest {
 
     // Assert
     assertNotNull(result);
-    assertEquals(testSettings, result.getSystemSettings());
+    assertEquals(
+        testSettings.getPowerLimitWatts(), result.getSystemSettings().getPowerLimitWatts());
+    assertEquals(
+        testSettings.getPowerOnMarginWatts(), result.getSystemSettings().getPowerOnMarginWatts());
+    assertEquals(
+        testSettings.getOverloadCooldownSeconds(),
+        result.getSystemSettings().getOverloadCooldownSeconds());
     assertEquals(1, result.getDevices().size());
     verify(deviceRepository).findByMqttPrefix("test/device");
     verify(systemSettingsRepository).findByUser(testUser);

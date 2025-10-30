@@ -26,6 +26,9 @@ public class User implements UserDetails {
   @Column(name = "password", nullable = false)
   private String password;
 
+  @Column(name = "username", nullable = false, unique = true)
+  private String username;
+
   @Getter
   @Enumerated(EnumType.STRING)
   @Column(name = "role", nullable = false)
@@ -33,16 +36,17 @@ public class User implements UserDetails {
 
   public User() {}
 
-  public User(String email, String password, Role role) {
+  public User(String email, String password, String username, Role role) {
     this.email = email;
     this.password = password;
+    this.username = username;
     this.role = role;
   }
 
   // UserDetails implementation
   @Override
   public String getUsername() {
-    return email;
+    return username;
   }
 
   @Override
