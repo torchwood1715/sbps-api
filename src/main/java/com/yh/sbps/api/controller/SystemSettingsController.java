@@ -1,7 +1,6 @@
 package com.yh.sbps.api.controller;
 
-import com.yh.sbps.api.dto.SystemSettingsDTO;
-import com.yh.sbps.api.entity.SystemSettings;
+import com.yh.sbps.api.dto.SystemSettingsDto;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.service.SystemSettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +20,15 @@ public class SystemSettingsController {
   }
 
   @GetMapping
-  public ResponseEntity<SystemSettingsDTO> getSettings(@AuthenticationPrincipal User user) {
-    SystemSettingsDTO settings = systemSettingsService.getSettings(user);
+  public ResponseEntity<SystemSettingsDto> getSettings(@AuthenticationPrincipal User user) {
+    SystemSettingsDto settings = systemSettingsService.getSettings(user);
     return ResponseEntity.ok(settings);
   }
 
   @PutMapping
-  public ResponseEntity<SystemSettingsDTO> updateSettings(
-      @AuthenticationPrincipal User user, @RequestBody SystemSettingsDTO newSettings) {
-    SystemSettingsDTO updatedSettings = systemSettingsService.updateSettings(user, newSettings);
+  public ResponseEntity<SystemSettingsDto> updateSettings(
+      @AuthenticationPrincipal User user, @RequestBody SystemSettingsDto newSettings) {
+    SystemSettingsDto updatedSettings = systemSettingsService.updateSettings(user, newSettings);
     return ResponseEntity.ok(updatedSettings);
   }
 }

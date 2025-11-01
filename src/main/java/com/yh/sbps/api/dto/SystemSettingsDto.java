@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @NoArgsConstructor
-public class SystemSettingsDTO {
+public class SystemSettingsDto {
   @PositiveOrZero private Integer powerLimitWatts;
   @PositiveOrZero private Integer powerOnMarginWatts;
   @PositiveOrZero private Integer overloadCooldownSeconds;

@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.yh.sbps.api.dto.SystemSettingsDTO;
+import com.yh.sbps.api.dto.SystemSettingsDto;
 import com.yh.sbps.api.dto.mapper.SystemSettingsMapper;
 import com.yh.sbps.api.entity.Role;
 import com.yh.sbps.api.entity.SystemSettings;
@@ -26,7 +26,7 @@ class SystemSettingsServiceTest {
   private SystemSettingsService systemSettingsService;
   private User testUser;
   private SystemSettings testSettings;
-  private SystemSettingsDTO testSettingsDTO;
+  private SystemSettingsDto testSettingsDTO;
 
   @BeforeEach
   void setUp() {
@@ -43,7 +43,7 @@ class SystemSettingsServiceTest {
     testSettings.setOverloadCooldownSeconds(30);
     testSettings.setUser(testUser);
 
-    testSettingsDTO = new SystemSettingsDTO();
+    testSettingsDTO = new SystemSettingsDto();
     testSettingsDTO.setPowerLimitWatts(3500);
     testSettingsDTO.setPowerOnMarginWatts(500);
     testSettingsDTO.setOverloadCooldownSeconds(30);
@@ -56,7 +56,7 @@ class SystemSettingsServiceTest {
     when(systemSettingsRepository.findByUser(testUser)).thenReturn(Optional.of(testSettings));
 
     // Act
-    SystemSettingsDTO result = systemSettingsService.getSettings(testUser);
+    SystemSettingsDto result = systemSettingsService.getSettings(testUser);
 
     // Assert
     assertNotNull(result);
@@ -82,7 +82,7 @@ class SystemSettingsServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
 
     // Act
-    SystemSettingsDTO result = systemSettingsService.getSettings(testUser);
+    SystemSettingsDto result = systemSettingsService.getSettings(testUser);
 
     // Assert
     assertNotNull(result);
@@ -97,7 +97,7 @@ class SystemSettingsServiceTest {
   @DisplayName("Should update existing settings")
   void updateSettings_ExistingSettings_UpdatesSuccessfully() {
     // Arrange
-    SystemSettingsDTO newSettings = new SystemSettingsDTO();
+    SystemSettingsDto newSettings = new SystemSettingsDto();
     newSettings.setPowerLimitWatts(4000);
     newSettings.setPowerOnMarginWatts(600);
     newSettings.setOverloadCooldownSeconds(45);
@@ -107,7 +107,7 @@ class SystemSettingsServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
 
     // Act
-    SystemSettingsDTO result = systemSettingsService.updateSettings(testUser, newSettings);
+    SystemSettingsDto result = systemSettingsService.updateSettings(testUser, newSettings);
 
     // Assert
     assertNotNull(result);
@@ -122,7 +122,7 @@ class SystemSettingsServiceTest {
   @DisplayName("Should create new settings when updating non-existent settings")
   void updateSettings_NoExistingSettings_CreatesNewSettings() {
     // Arrange
-    SystemSettingsDTO newSettings = new SystemSettingsDTO();
+    SystemSettingsDto newSettings = new SystemSettingsDto();
     newSettings.setPowerLimitWatts(4000);
     newSettings.setPowerOnMarginWatts(600);
     newSettings.setOverloadCooldownSeconds(45);
@@ -132,7 +132,7 @@ class SystemSettingsServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
 
     // Act
-    SystemSettingsDTO result = systemSettingsService.updateSettings(testUser, newSettings);
+    SystemSettingsDto result = systemSettingsService.updateSettings(testUser, newSettings);
 
     // Assert
     assertNotNull(result);
@@ -148,7 +148,7 @@ class SystemSettingsServiceTest {
   @DisplayName("Should handle null values in update gracefully")
   void updateSettings_NullValues_KeepsExistingValues() {
     // Arrange
-    SystemSettingsDTO newSettings = new SystemSettingsDTO();
+    SystemSettingsDto newSettings = new SystemSettingsDto();
     // All values are null
 
     when(systemSettingsRepository.findByUser(testUser)).thenReturn(Optional.of(testSettings));
@@ -156,7 +156,7 @@ class SystemSettingsServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
 
     // Act
-    SystemSettingsDTO result = systemSettingsService.updateSettings(testUser, newSettings);
+    SystemSettingsDto result = systemSettingsService.updateSettings(testUser, newSettings);
 
     // Assert
     assertNotNull(result);

@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @NoArgsConstructor
-public class DeviceResponseDTO {
+public class DeviceResponseDto {
   private Long id;
   private String name;
   private String mqttPrefix;

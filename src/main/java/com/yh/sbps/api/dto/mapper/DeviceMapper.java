@@ -1,7 +1,7 @@
 package com.yh.sbps.api.dto.mapper;
 
-import com.yh.sbps.api.dto.DeviceRequestDTO;
-import com.yh.sbps.api.dto.DeviceResponseDTO;
+import com.yh.sbps.api.dto.DeviceRequestDto;
+import com.yh.sbps.api.dto.DeviceResponseDto;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.User;
 import java.util.List;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DeviceMapper {
 
-  public Device toEntity(DeviceRequestDTO dto, User user) {
+  public Device toEntity(DeviceRequestDto dto, User user) {
     Device device = new Device();
     device.setName(dto.getName());
     device.setMqttPrefix(dto.getMqttPrefix());
@@ -22,7 +22,7 @@ public class DeviceMapper {
     return device;
   }
 
-  public void updateEntityFromDto(Device device, DeviceRequestDTO dto) {
+  public void updateEntityFromDto(Device device, DeviceRequestDto dto) {
     device.setName(dto.getName());
     device.setMqttPrefix(dto.getMqttPrefix());
     device.setDeviceType(dto.getDeviceType());
@@ -30,8 +30,8 @@ public class DeviceMapper {
     device.setWattage(dto.getWattage());
   }
 
-  public DeviceResponseDTO toResponseDTO(Device device) {
-    DeviceResponseDTO dto = new DeviceResponseDTO();
+  public DeviceResponseDto toResponseDTO(Device device) {
+    DeviceResponseDto dto = new DeviceResponseDto();
     dto.setId(device.getId());
     dto.setName(device.getName());
     dto.setMqttPrefix(device.getMqttPrefix());
@@ -45,7 +45,7 @@ public class DeviceMapper {
     return dto;
   }
 
-  public List<DeviceResponseDTO> toResponseDTOList(List<Device> devices) {
+  public List<DeviceResponseDto> toResponseDTOList(List<Device> devices) {
     return devices.stream().map(this::toResponseDTO).collect(Collectors.toList());
   }
 }

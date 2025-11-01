@@ -1,6 +1,6 @@
 package com.yh.sbps.api.service;
 
-import com.yh.sbps.api.dto.SystemSettingsDTO;
+import com.yh.sbps.api.dto.SystemSettingsDto;
 import com.yh.sbps.api.dto.mapper.SystemSettingsMapper;
 import com.yh.sbps.api.entity.SystemSettings;
 import com.yh.sbps.api.entity.User;
@@ -26,12 +26,12 @@ public class SystemSettingsService {
     this.systemSettingsRepository = systemSettingsRepository;
   }
 
-  public SystemSettingsDTO getSettings(User user) {
+  public SystemSettingsDto getSettings(User user) {
     return systemSettingsMapper.toDto(
         systemSettingsRepository.findByUser(user).orElseGet(() -> createDefaultSettings(user)));
   }
 
-  public SystemSettingsDTO updateSettings(User user, SystemSettingsDTO newSettings) {
+  public SystemSettingsDto updateSettings(User user, SystemSettingsDto newSettings) {
     SystemSettings existingSettings =
         systemSettingsRepository.findByUser(user).orElseGet(() -> createDefaultSettings(user));
     systemSettingsMapper.updateEntityFromDto(existingSettings, newSettings);

@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.yh.sbps.api.dto.DeviceRequestDTO;
+import com.yh.sbps.api.dto.DeviceRequestDto;
 import com.yh.sbps.api.dto.SystemStateDto;
 import com.yh.sbps.api.dto.mapper.DeviceMapper;
 import com.yh.sbps.api.dto.mapper.SystemSettingsMapper;
@@ -150,7 +150,7 @@ class DeviceServiceTest {
     newDevice.setMqttPrefix("new/device");
     newDevice.setDeviceType(DeviceType.POWER_MONITOR);
 
-    DeviceRequestDTO deviceDto = new DeviceRequestDTO();
+    DeviceRequestDto deviceDto = new DeviceRequestDto();
     deviceDto.setName("New Device");
     deviceDto.setMqttPrefix("new/device");
     deviceDto.setDeviceType(DeviceType.POWER_MONITOR);
@@ -173,7 +173,7 @@ class DeviceServiceTest {
   @DisplayName("Should update device and notify device service")
   void updateDevice_ValidDevice_UpdatesAndNotifies() {
     // Arrange
-    DeviceRequestDTO updatedDetails = new DeviceRequestDTO();
+    DeviceRequestDto updatedDetails = new DeviceRequestDto();
     updatedDetails.setName("Updated Name");
     updatedDetails.setMqttPrefix("updated/prefix");
     updatedDetails.setDeviceType(DeviceType.POWER_MONITOR);
@@ -207,7 +207,7 @@ class DeviceServiceTest {
     // Act & Assert
     assertThrows(
         RuntimeException.class,
-        () -> deviceService.updateDevice(999L, new DeviceRequestDTO(), testUser));
+        () -> deviceService.updateDevice(999L, new DeviceRequestDto(), testUser));
     verify(deviceRepository, never()).save(any());
     verify(deviceServiceWS, never()).notifyDeviceUpdate(any());
   }
@@ -224,7 +224,7 @@ class DeviceServiceTest {
     // Act & Assert
     assertThrows(
         RuntimeException.class,
-        () -> deviceService.updateDevice(1L, new DeviceRequestDTO(), otherUser));
+        () -> deviceService.updateDevice(1L, new DeviceRequestDto(), otherUser));
     verify(deviceRepository, never()).save(any());
     verify(deviceServiceWS, never()).notifyDeviceUpdate(any());
   }

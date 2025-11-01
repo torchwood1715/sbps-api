@@ -1,7 +1,7 @@
 package com.yh.sbps.api.controller;
 
-import com.yh.sbps.api.dto.DeviceRequestDTO;
-import com.yh.sbps.api.dto.DeviceResponseDTO;
+import com.yh.sbps.api.dto.DeviceRequestDto;
+import com.yh.sbps.api.dto.DeviceResponseDto;
 import com.yh.sbps.api.dto.SystemStateDto;
 import com.yh.sbps.api.dto.mapper.DeviceMapper;
 import com.yh.sbps.api.entity.Device;
@@ -17,7 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/devices")
+@RequestMapping("/api/devices")
 public class DeviceController {
 
   private final DeviceService deviceService;
@@ -30,13 +30,13 @@ public class DeviceController {
   }
 
   @GetMapping
-  public ResponseEntity<List<DeviceResponseDTO>> getAllDevices(@AuthenticationPrincipal User user) {
+  public ResponseEntity<List<DeviceResponseDto>> getAllDevices(@AuthenticationPrincipal User user) {
     List<Device> devices = deviceService.getAllDevices(user);
     return ResponseEntity.ok(deviceMapper.toResponseDTOList(devices));
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<DeviceResponseDTO> getDeviceById(@PathVariable Long id) {
+  public ResponseEntity<DeviceResponseDto> getDeviceById(@PathVariable Long id) {
     Optional<Device> device = deviceService.getDeviceById(id);
     return device
         .map(d -> ResponseEntity.ok(deviceMapper.toResponseDTO(d)))
@@ -44,8 +44,8 @@ public class DeviceController {
   }
 
   @PostMapping
-  public ResponseEntity<DeviceResponseDTO> createDevice(
-      @RequestBody DeviceRequestDTO device, @AuthenticationPrincipal User user) {
+  public ResponseEntity<DeviceResponseDto> createDevice(
+          @RequestBody DeviceRequestDto device, @AuthenticationPrincipal User user) {
     try {
       Device savedDevice = deviceService.saveDevice(device, user);
       return ResponseEntity.status(HttpStatus.CREATED)
@@ -56,9 +56,9 @@ public class DeviceController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<DeviceResponseDTO> updateDevice(
+  public ResponseEntity<DeviceResponseDto> updateDevice(
       @PathVariable Long id,
-      @RequestBody DeviceRequestDTO deviceDetails,
+      @RequestBody DeviceRequestDto deviceDetails,
       @AuthenticationPrincipal User user) {
     try {
       Device updatedDevice = deviceService.updateDevice(id, deviceDetails, user);

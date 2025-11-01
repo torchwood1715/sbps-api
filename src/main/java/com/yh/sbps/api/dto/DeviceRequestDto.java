@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @NoArgsConstructor
-public class DeviceRequestDTO {
+public class DeviceRequestDto {
 
   @NotBlank(message = "Device name is required")
   private String name;

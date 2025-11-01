@@ -1,10 +1,16 @@
 package com.yh.sbps.api.controller;
 
+import com.yh.sbps.api.dto.DeviceStatusUpdateDto;
 import com.yh.sbps.api.entity.Device;
+import com.yh.sbps.api.entity.Role;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.integration.DeviceServiceWS;
 import com.yh.sbps.api.service.DeviceService;
+import com.yh.sbps.api.service.WebSocketService;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,10 +22,15 @@ public class DeviceControlController {
 
   private final DeviceService deviceService;
   private final DeviceServiceWS deviceServiceWS;
+  private final WebSocketService webSocketService;
 
-  public DeviceControlController(DeviceService deviceService, DeviceServiceWS deviceServiceWS) {
+  public DeviceControlController(
+      DeviceService deviceService,
+      DeviceServiceWS deviceServiceWS,
+      WebSocketService webSocketService) {
     this.deviceService = deviceService;
     this.deviceServiceWS = deviceServiceWS;
+    this.webSocketService = webSocketService;
   }
 
   @PostMapping("/plug/{deviceId}/toggle")
@@ -81,5 +92,51 @@ public class DeviceControlController {
     }
     Device device = deviceOpt.get();
     return device.getUser() != null && device.getUser().getId().equals(user.getId());
+  }
+
+  @GetMapping("/all-statuses")
+  public ResponseEntity<?> getAllDeviceStatuses(@AuthenticationPrincipal User user) {
+    try {
+      List<Device> devices = deviceService.getAllDevices(user);
+
+      Map<Long, Object> allStatuses =
+          devices.stream()
+              .collect(
+                  Collectors.toMap(
+                      Device::getId,
+                      device -> {
+                        try {
+                          ResponseEntity<?> onlineResp = deviceServiceWS.getOnline(device.getId());
+                          if (Boolean.TRUE.equals(onlineResp.getBody())) {
+                            ResponseEntity<?> statusResp =
+                                deviceServiceWS.getStatus(device.getId());
+                            return statusResp.getBody();
+                          }
+                          return Map.of("online", false);
+                        } catch (Exception e) {
+                          return Map.of("online", false, "error", e.getMessage());
+                        }
+                      }));
+
+      return ResponseEntity.ok(allStatuses);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    }
+  }
+
+  @PostMapping("/internal/device-update")
+  public ResponseEntity<Void> receiveDeviceUpdate(
+      @RequestBody DeviceStatusUpdateDto deviceStatusUpdate,
+      @AuthenticationPrincipal User serviceUser) {
+
+    if (serviceUser == null || serviceUser.getRole() != Role.SERVICE_USER) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    if (deviceStatusUpdate.getUsername() != null) {
+      webSocketService.broadcastDeviceUpdate(deviceStatusUpdate.getUsername(), deviceStatusUpdate);
+      return ResponseEntity.ok().build();
+    }
+    return ResponseEntity.badRequest().build();
   }
 }

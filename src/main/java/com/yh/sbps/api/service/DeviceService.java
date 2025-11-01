@@ -2,9 +2,9 @@ package com.yh.sbps.api.service;
 
 import static com.yh.sbps.api.entity.Role.SERVICE_USER;
 
-import com.yh.sbps.api.dto.DeviceRequestDTO;
-import com.yh.sbps.api.dto.DeviceResponseDTO;
-import com.yh.sbps.api.dto.SystemSettingsDTO;
+import com.yh.sbps.api.dto.DeviceRequestDto;
+import com.yh.sbps.api.dto.DeviceResponseDto;
+import com.yh.sbps.api.dto.SystemSettingsDto;
 import com.yh.sbps.api.dto.SystemStateDto;
 import com.yh.sbps.api.dto.mapper.DeviceMapper;
 import com.yh.sbps.api.dto.mapper.SystemSettingsMapper;
@@ -56,7 +56,7 @@ public class DeviceService {
     return deviceRepository.findById(id);
   }
 
-  public Device saveDevice(DeviceRequestDTO deviceDto, User user) {
+  public Device saveDevice(DeviceRequestDto deviceDto, User user) {
     if (deviceDto.getDeviceType() == DeviceType.POWER_MONITOR) {
       boolean monitorExists =
           deviceRepository.existsByUserAndDeviceType(user, DeviceType.POWER_MONITOR);
@@ -72,7 +72,7 @@ public class DeviceService {
     return saved;
   }
 
-  public Device updateDevice(Long id, DeviceRequestDTO deviceDetailsDto, User user) {
+  public Device updateDevice(Long id, DeviceRequestDto deviceDetailsDto, User user) {
     Device existingDevice =
         deviceRepository
             .findById(id)
@@ -113,14 +113,14 @@ public class DeviceService {
     if (user == null) {
       throw new IllegalStateException("Device is not associated with any user");
     }
-    SystemSettingsDTO systemSettings =
+    SystemSettingsDto systemSettings =
         systemSettingsMapper.toDto(
             systemSettingsRepository
                 .findByUser(user)
                 .orElseThrow(
                     () ->
                         new EntityNotFoundException("User settings not found with user: " + user)));
-    List<DeviceResponseDTO> allDevices = deviceMapper.toResponseDTOList(deviceRepository.findAllByUser(user));
+    List<DeviceResponseDto> allDevices = deviceMapper.toResponseDTOList(deviceRepository.findAllByUser(user));
     return new SystemStateDto(systemSettings, allDevices);
   }
 }

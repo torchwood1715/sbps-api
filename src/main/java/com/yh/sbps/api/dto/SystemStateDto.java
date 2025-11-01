@@ -11,6 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SystemStateDto {
-  SystemSettingsDTO systemSettings;
-  List<DeviceResponseDTO> devices;
+  SystemSettingsDto systemSettings;
+  List<DeviceResponseDto> devices;
 }
