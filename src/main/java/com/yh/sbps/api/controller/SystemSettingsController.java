@@ -3,6 +3,7 @@ package com.yh.sbps.api.controller;
 import com.yh.sbps.api.dto.SystemSettingsDto;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.service.SystemSettingsService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,7 +28,7 @@ public class SystemSettingsController {
 
   @PutMapping
   public ResponseEntity<SystemSettingsDto> updateSettings(
-      @AuthenticationPrincipal User user, @RequestBody SystemSettingsDto newSettings) {
+      @AuthenticationPrincipal User user, @Valid @RequestBody SystemSettingsDto newSettings) {
     SystemSettingsDto updatedSettings = systemSettingsService.updateSettings(user, newSettings);
     return ResponseEntity.ok(updatedSettings);
   }

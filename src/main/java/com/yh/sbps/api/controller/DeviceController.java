@@ -8,6 +8,7 @@ import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.service.DeviceService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,7 @@ public class DeviceController {
 
   @PostMapping
   public ResponseEntity<DeviceResponseDto> createDevice(
-          @RequestBody DeviceRequestDto device, @AuthenticationPrincipal User user) {
+      @Valid @RequestBody DeviceRequestDto device, @AuthenticationPrincipal User user) {
     try {
       Device savedDevice = deviceService.saveDevice(device, user);
       return ResponseEntity.status(HttpStatus.CREATED)
@@ -58,7 +59,7 @@ public class DeviceController {
   @PutMapping("/{id}")
   public ResponseEntity<DeviceResponseDto> updateDevice(
       @PathVariable Long id,
-      @RequestBody DeviceRequestDto deviceDetails,
+      @Valid @RequestBody DeviceRequestDto deviceDetails,
       @AuthenticationPrincipal User user) {
     try {
       Device updatedDevice = deviceService.updateDevice(id, deviceDetails, user);
