@@ -6,7 +6,6 @@ import com.yh.sbps.api.dto.SystemStateDto;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.service.DeviceService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -44,12 +43,8 @@ public class DeviceController {
   @PostMapping
   public ResponseEntity<DeviceResponseDto> createDevice(
       @Valid @RequestBody DeviceRequestDto device, @AuthenticationPrincipal User user) {
-    try {
-      Device savedDevice = deviceService.saveDevice(device, user);
-      return ResponseEntity.status(HttpStatus.CREATED).body(DeviceResponseDto.from(savedDevice));
-    } catch (Exception e) {
-      return ResponseEntity.badRequest().build();
-    }
+    Device savedDevice = deviceService.saveDevice(device, user);
+    return ResponseEntity.status(HttpStatus.CREATED).body(DeviceResponseDto.from(savedDevice));
   }
 
   @PutMapping("/{id}")
@@ -57,37 +52,21 @@ public class DeviceController {
       @PathVariable Long id,
       @Valid @RequestBody DeviceRequestDto deviceDetails,
       @AuthenticationPrincipal User user) {
-    try {
-      Device updatedDevice = deviceService.updateDevice(id, deviceDetails, user);
-      return ResponseEntity.ok(DeviceResponseDto.from(updatedDevice));
-    } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
-    } catch (Exception e) {
-      return ResponseEntity.badRequest().build();
-    }
+    Device updatedDevice = deviceService.updateDevice(id, deviceDetails, user);
+    return ResponseEntity.ok(DeviceResponseDto.from(updatedDevice));
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteDevice(
       @PathVariable Long id, @AuthenticationPrincipal User user) {
-    try {
-      deviceService.deleteDevice(id, user);
-      return ResponseEntity.noContent().build();
-    } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
-    }
+    deviceService.deleteDevice(id, user);
+    return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/by-mqtt-prefix/{mqttPrefix}")
   public ResponseEntity<SystemStateDto> getSystemStateByMqttPrefix(
       @PathVariable String mqttPrefix) {
-    try {
-      SystemStateDto state = deviceService.getSystemStateByMqttPrefix(mqttPrefix);
-      return ResponseEntity.ok(state);
-    } catch (EntityNotFoundException e) {
-      return ResponseEntity.notFound().build();
-    } catch (RuntimeException e) {
-      return ResponseEntity.internalServerError().build();
-    }
+    SystemStateDto state = deviceService.getSystemStateByMqttPrefix(mqttPrefix);
+    return ResponseEntity.ok(state);
   }
 }

@@ -26,3 +26,6 @@ admin:
 service-user:
   email: ${SERVICE_USER_EMAIL}
   password: ${SERVICE_USER_PASSWORD}
+
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:5173}

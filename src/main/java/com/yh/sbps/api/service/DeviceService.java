@@ -71,10 +71,13 @@ public class DeviceService {
     Device existingDevice =
         deviceRepository
             .findById(id)
-            .orElseThrow(() -> new RuntimeException("Device not found with id: " + id));
+            .orElseThrow(
+                () ->
+                    new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Device not found with id: " + id));
 
     if (!existingDevice.getUser().getId().equals(user.getId())) {
-      throw new RuntimeException("User does not own this device");
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not own this device");
     }
     String oldMqttPrefix = existingDevice.getMqttPrefix();
 
@@ -99,10 +102,13 @@ public class DeviceService {
     Device device =
         deviceRepository
             .findById(id)
-            .orElseThrow(() -> new RuntimeException("Device not found with id: " + id));
+            .orElseThrow(
+                () ->
+                    new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Device not found with id: " + id));
 
     if (device.getUser() == null || !device.getUser().getId().equals(user.getId())) {
-      throw new RuntimeException("User can only delete own devices");
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User can only delete own devices");
     }
 
     if (device.getMqttPrefix() != null) {
