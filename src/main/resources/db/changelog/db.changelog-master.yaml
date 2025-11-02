@@ -149,3 +149,26 @@ databaseChangeLog:
         - dropColumn:
             tableName: devices
             columnName: type
+  - changeSet:
+      id: 7
+      author: system
+      changes:
+        - addColumn:
+            tableName: devices
+            columns:
+              - column:
+                  name: prevent_downtime
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: max_downtime_minutes
+                  type: INTEGER
+                  constraints:
+                    nullable: true
+              - column:
+                  name: min_uptime_minutes
+                  type: INTEGER
+                  constraints:
+                    nullable: true

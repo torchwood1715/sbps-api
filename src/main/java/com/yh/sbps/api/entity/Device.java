@@ -32,6 +32,15 @@ public class Device {
   @Column(name = "wattage")
   private Integer wattage;
 
+  @Column(name = "prevent_downtime", nullable = false)
+  private boolean preventDowntime = false;
+
+  @Column(name = "max_downtime_minutes")
+  private Integer maxDowntimeMinutes;
+
+  @Column(name = "min_uptime_minutes")
+  private Integer minUptimeMinutes;
+
   @ManyToOne
   @JoinColumn(name = "user_id")
   private User user;

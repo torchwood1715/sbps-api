@@ -1,7 +1,6 @@
 package com.yh.sbps.api.service;
 
 import com.yh.sbps.api.dto.SystemSettingsDto;
-import com.yh.sbps.api.dto.mapper.SystemSettingsMapper;
 import com.yh.sbps.api.entity.SystemSettings;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.repository.SystemSettingsRepository;
@@ -15,29 +14,25 @@ public class SystemSettingsService {
   private static final Integer DEFAULT_POWER_LIMIT_WATTS = 3500;
   private static final Integer DEFAULT_POWER_ON_MARGIN_WATTS = 500;
   private static final Integer DEFAULT_OVERLOAD_COOLDOWN_SECONDS = 30;
-  private final SystemSettingsMapper systemSettingsMapper;
   private final SystemSettingsRepository systemSettingsRepository;
 
   @Autowired
-  public SystemSettingsService(
-      SystemSettingsMapper systemSettingsMapper,
-      SystemSettingsRepository systemSettingsRepository) {
-    this.systemSettingsMapper = systemSettingsMapper;
+  public SystemSettingsService(SystemSettingsRepository systemSettingsRepository) {
     this.systemSettingsRepository = systemSettingsRepository;
   }
 
   public SystemSettingsDto getSettings(User user) {
-    return systemSettingsMapper.toDto(
+    return SystemSettingsDto.fromEntity(
         systemSettingsRepository.findByUser(user).orElseGet(() -> createDefaultSettings(user)));
   }
 
   public SystemSettingsDto updateSettings(User user, SystemSettingsDto newSettings) {
     SystemSettings existingSettings =
         systemSettingsRepository.findByUser(user).orElseGet(() -> createDefaultSettings(user));
-    systemSettingsMapper.updateEntityFromDto(existingSettings, newSettings);
+    SystemSettingsDto.toEntity(existingSettings, newSettings);
 
     SystemSettings save = systemSettingsRepository.save(existingSettings);
-    return systemSettingsMapper.toDto(save);
+    return SystemSettingsDto.fromEntity(save);
   }
 
   private SystemSettings createDefaultSettings(User user) {

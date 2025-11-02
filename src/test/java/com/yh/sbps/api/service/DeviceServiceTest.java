@@ -6,8 +6,6 @@ import static org.mockito.Mockito.*;
 
 import com.yh.sbps.api.dto.DeviceRequestDto;
 import com.yh.sbps.api.dto.SystemStateDto;
-import com.yh.sbps.api.dto.mapper.DeviceMapper;
-import com.yh.sbps.api.dto.mapper.SystemSettingsMapper;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.DeviceType;
 import com.yh.sbps.api.entity.Role;
@@ -47,13 +45,7 @@ class DeviceServiceTest {
 
   @BeforeEach
   void setUp() {
-    deviceService =
-        new DeviceService(
-            new DeviceMapper(),
-            new SystemSettingsMapper(),
-            deviceRepository,
-            systemSettingsRepository,
-            deviceServiceWS);
+    deviceService = new DeviceService(deviceRepository, systemSettingsRepository, deviceServiceWS);
 
     testUser = new User("test@example.com", "test", "password", Role.USER);
     testUser.setId(1L);

@@ -3,7 +3,6 @@ package com.yh.sbps.api.controller;
 import com.yh.sbps.api.dto.DeviceRequestDto;
 import com.yh.sbps.api.dto.DeviceResponseDto;
 import com.yh.sbps.api.dto.SystemStateDto;
-import com.yh.sbps.api.dto.mapper.DeviceMapper;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.service.DeviceService;
@@ -22,25 +21,23 @@ import org.springframework.web.bind.annotation.*;
 public class DeviceController {
 
   private final DeviceService deviceService;
-  private final DeviceMapper deviceMapper;
 
   @Autowired
-  public DeviceController(DeviceService deviceService, DeviceMapper deviceMapper) {
+  public DeviceController(DeviceService deviceService) {
     this.deviceService = deviceService;
-    this.deviceMapper = deviceMapper;
   }
 
   @GetMapping
   public ResponseEntity<List<DeviceResponseDto>> getAllDevices(@AuthenticationPrincipal User user) {
     List<Device> devices = deviceService.getAllDevices(user);
-    return ResponseEntity.ok(deviceMapper.toResponseDTOList(devices));
+    return ResponseEntity.ok(devices.stream().map(DeviceResponseDto::from).toList());
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<DeviceResponseDto> getDeviceById(@PathVariable Long id) {
     Optional<Device> device = deviceService.getDeviceById(id);
     return device
-        .map(d -> ResponseEntity.ok(deviceMapper.toResponseDTO(d)))
+        .map(d -> ResponseEntity.ok(DeviceResponseDto.from(d)))
         .orElse(ResponseEntity.notFound().build());
   }
 
@@ -49,8 +46,7 @@ public class DeviceController {
       @Valid @RequestBody DeviceRequestDto device, @AuthenticationPrincipal User user) {
     try {
       Device savedDevice = deviceService.saveDevice(device, user);
-      return ResponseEntity.status(HttpStatus.CREATED)
-          .body(deviceMapper.toResponseDTO(savedDevice));
+      return ResponseEntity.status(HttpStatus.CREATED).body(DeviceResponseDto.from(savedDevice));
     } catch (Exception e) {
       return ResponseEntity.badRequest().build();
     }
@@ -63,7 +59,7 @@ public class DeviceController {
       @AuthenticationPrincipal User user) {
     try {
       Device updatedDevice = deviceService.updateDevice(id, deviceDetails, user);
-      return ResponseEntity.ok(deviceMapper.toResponseDTO(updatedDevice));
+      return ResponseEntity.ok(DeviceResponseDto.from(updatedDevice));
     } catch (RuntimeException e) {
       return ResponseEntity.notFound().build();
     } catch (Exception e) {
@@ -84,7 +80,7 @@ public class DeviceController {
 
   @GetMapping("/by-mqtt-prefix/{mqttPrefix}")
   public ResponseEntity<SystemStateDto> getSystemStateByMqttPrefix(
-      @PathVariable String mqttPrefix, @AuthenticationPrincipal User user) {
+      @PathVariable String mqttPrefix) {
     try {
       SystemStateDto state = deviceService.getSystemStateByMqttPrefix(mqttPrefix);
       return ResponseEntity.ok(state);

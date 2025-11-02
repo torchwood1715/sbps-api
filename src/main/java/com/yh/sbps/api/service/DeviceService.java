@@ -6,8 +6,6 @@ import com.yh.sbps.api.dto.DeviceRequestDto;
 import com.yh.sbps.api.dto.DeviceResponseDto;
 import com.yh.sbps.api.dto.SystemSettingsDto;
 import com.yh.sbps.api.dto.SystemStateDto;
-import com.yh.sbps.api.dto.mapper.DeviceMapper;
-import com.yh.sbps.api.dto.mapper.SystemSettingsMapper;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.DeviceType;
 import com.yh.sbps.api.entity.User;
@@ -25,21 +23,15 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class DeviceService {
 
-  private final DeviceMapper deviceMapper;
-  private final SystemSettingsMapper systemSettingsMapper;
   private final DeviceRepository deviceRepository;
   private final SystemSettingsRepository systemSettingsRepository;
   private final DeviceServiceWS deviceServiceWS;
 
   @Autowired
   public DeviceService(
-      DeviceMapper deviceMapper,
-      SystemSettingsMapper systemSettingsMapper,
       DeviceRepository deviceRepository,
       SystemSettingsRepository systemSettingsRepository,
       DeviceServiceWS deviceServiceWS) {
-    this.deviceMapper = deviceMapper;
-    this.systemSettingsMapper = systemSettingsMapper;
     this.deviceRepository = deviceRepository;
     this.systemSettingsRepository = systemSettingsRepository;
     this.deviceServiceWS = deviceServiceWS;
@@ -65,7 +57,7 @@ public class DeviceService {
             HttpStatus.CONFLICT, "Power monitor already exists for this user.");
       }
     }
-    Device device = deviceMapper.toEntity(deviceDto, user);
+    Device device = DeviceRequestDto.toEntity(null, deviceDto);
     device.setUser(user);
     Device saved = deviceRepository.save(device);
     deviceServiceWS.notifyDeviceUpdate(saved);
@@ -82,8 +74,8 @@ public class DeviceService {
       throw new RuntimeException("User does not own this device");
     }
 
-    deviceMapper.updateEntityFromDto(existingDevice, deviceDetailsDto);
-    Device saved = deviceRepository.save(existingDevice);
+    Device saved =
+        deviceRepository.save(DeviceRequestDto.toEntity(existingDevice, deviceDetailsDto));
     deviceServiceWS.notifyDeviceUpdate(saved);
     return saved;
   }
@@ -114,13 +106,14 @@ public class DeviceService {
       throw new IllegalStateException("Device is not associated with any user");
     }
     SystemSettingsDto systemSettings =
-        systemSettingsMapper.toDto(
+        SystemSettingsDto.fromEntity(
             systemSettingsRepository
                 .findByUser(user)
                 .orElseThrow(
                     () ->
                         new EntityNotFoundException("User settings not found with user: " + user)));
-    List<DeviceResponseDto> allDevices = deviceMapper.toResponseDTOList(deviceRepository.findAllByUser(user));
+    List<DeviceResponseDto> allDevices =
+        deviceRepository.findAllByUser(user).stream().map(DeviceResponseDto::from).toList();
     return new SystemStateDto(systemSettings, allDevices);
   }
 }

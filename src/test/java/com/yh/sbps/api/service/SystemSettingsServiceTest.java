@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.yh.sbps.api.dto.SystemSettingsDto;
-import com.yh.sbps.api.dto.mapper.SystemSettingsMapper;
 import com.yh.sbps.api.entity.Role;
 import com.yh.sbps.api.entity.SystemSettings;
 import com.yh.sbps.api.entity.User;
@@ -30,8 +29,7 @@ class SystemSettingsServiceTest {
 
   @BeforeEach
   void setUp() {
-    systemSettingsService =
-        new SystemSettingsService(new SystemSettingsMapper(), systemSettingsRepository);
+    systemSettingsService = new SystemSettingsService(systemSettingsRepository);
 
     testUser = new User("test@example.com", "test", "password", Role.USER);
     testUser.setId(1L);
