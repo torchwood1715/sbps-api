@@ -46,6 +46,42 @@ public class DeviceServiceWS {
         .subscribe();
   }
 
+  public void notifyDeviceDelete(String mqttPrefix) {
+    String url = deviceServiceUrl + "/api/device/internal/unsubscribe";
+    logger.info("Notifying device-service (UNSUBSCRIBE) for prefix: {}", mqttPrefix);
+    webClient
+        .post()
+        .uri(url)
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(mqttPrefix)
+        .retrieve()
+        .bodyToMono(Void.class)
+        .doOnError(
+            error ->
+                logger.error(
+                    "Failed to notify device-service about device deletion: {}", mqttPrefix, error))
+        .subscribe();
+  }
+
+  public void notifyDeviceRefresh(Device device) {
+    String url = deviceServiceUrl + "/api/device/internal/refresh";
+    logger.info("Notifying device-service (REFRESH) for device: {}", device.getName());
+    webClient
+        .post()
+        .uri(url)
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(device)
+        .retrieve()
+        .bodyToMono(Void.class)
+        .doOnError(
+            error ->
+                logger.error(
+                    "Failed to notify device-service about device refresh: {}",
+                    device.getName(),
+                    error))
+        .subscribe();
+  }
+
   public ResponseEntity<String> togglePlug(Long deviceId, boolean on) {
     String url = deviceServiceUrl + "/api/device/plug/" + deviceId + "/toggle?on=" + on;
     logger.info("Attempting to call device-service POST toggle at: {}", url);

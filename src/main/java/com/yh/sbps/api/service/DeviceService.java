@@ -15,6 +15,8 @@ import com.yh.sbps.api.repository.SystemSettingsRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class DeviceService {
 
+  private static final Logger logger = LoggerFactory.getLogger(DeviceService.class);
   private final DeviceRepository deviceRepository;
   private final SystemSettingsRepository systemSettingsRepository;
   private final DeviceServiceWS deviceServiceWS;
@@ -73,10 +76,22 @@ public class DeviceService {
     if (!existingDevice.getUser().getId().equals(user.getId())) {
       throw new RuntimeException("User does not own this device");
     }
+    String oldMqttPrefix = existingDevice.getMqttPrefix();
 
-    Device saved =
-        deviceRepository.save(DeviceRequestDto.toEntity(existingDevice, deviceDetailsDto));
-    deviceServiceWS.notifyDeviceUpdate(saved);
+    DeviceRequestDto.toEntity(existingDevice, deviceDetailsDto);
+    Device saved = deviceRepository.save(existingDevice);
+
+    String newMqttPrefix = saved.getMqttPrefix();
+
+    if (oldMqttPrefix != null && !oldMqttPrefix.equals(newMqttPrefix)) {
+      logger.info("MQTT prefix changed for device {}. Re-subscribing.", saved.getName());
+      deviceServiceWS.notifyDeviceDelete(oldMqttPrefix);
+      deviceServiceWS.notifyDeviceUpdate(saved);
+    } else {
+      logger.info("Device {} updated. Refreshing cache.", saved.getName());
+      deviceServiceWS.notifyDeviceRefresh(saved);
+    }
+
     return saved;
   }
 
@@ -87,7 +102,11 @@ public class DeviceService {
             .orElseThrow(() -> new RuntimeException("Device not found with id: " + id));
 
     if (device.getUser() == null || !device.getUser().getId().equals(user.getId())) {
-      throw new RuntimeException("You can only delete your own devices");
+      throw new RuntimeException("User can only delete own devices");
+    }
+
+    if (device.getMqttPrefix() != null) {
+      deviceServiceWS.notifyDeviceDelete(device.getMqttPrefix());
     }
 
     deviceRepository.deleteById(id);
