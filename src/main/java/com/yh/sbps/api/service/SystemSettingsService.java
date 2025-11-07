@@ -1,11 +1,18 @@
 package com.yh.sbps.api.service;
 
 import com.yh.sbps.api.dto.SystemSettingsDto;
+import com.yh.sbps.api.entity.Device;
+import com.yh.sbps.api.entity.DeviceType;
 import com.yh.sbps.api.entity.SystemSettings;
 import com.yh.sbps.api.entity.User;
+import com.yh.sbps.api.integration.DeviceServiceWS;
 import com.yh.sbps.api.repository.SystemSettingsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class SystemSettingsService {
@@ -14,11 +21,19 @@ public class SystemSettingsService {
   private static final Integer DEFAULT_POWER_LIMIT_WATTS = 3500;
   private static final Integer DEFAULT_POWER_ON_MARGIN_WATTS = 500;
   private static final Integer DEFAULT_OVERLOAD_COOLDOWN_SECONDS = 30;
+  private static final Logger logger = LoggerFactory.getLogger(SystemSettingsService.class);
   private final SystemSettingsRepository systemSettingsRepository;
+  private final DeviceService deviceService;
+  private final DeviceServiceWS deviceServiceWS;
 
   @Autowired
-  public SystemSettingsService(SystemSettingsRepository systemSettingsRepository) {
+  public SystemSettingsService(
+      SystemSettingsRepository systemSettingsRepository,
+      DeviceService deviceService,
+      DeviceServiceWS deviceServiceWS) {
     this.systemSettingsRepository = systemSettingsRepository;
+    this.deviceService = deviceService;
+    this.deviceServiceWS = deviceServiceWS;
   }
 
   public SystemSettingsDto getSettings(User user) {
@@ -32,6 +47,7 @@ public class SystemSettingsService {
     SystemSettingsDto.toEntity(existingSettings, newSettings);
 
     SystemSettings save = systemSettingsRepository.save(existingSettings);
+    notifyDeviceServiceOfSettingsUpdate(user);
     return SystemSettingsDto.fromEntity(save);
   }
 
@@ -43,5 +59,22 @@ public class SystemSettingsService {
             DEFAULT_OVERLOAD_COOLDOWN_SECONDS,
             user);
     return systemSettingsRepository.save(defaultSettings);
+  }
+
+  private void notifyDeviceServiceOfSettingsUpdate(User user) {
+    try {
+      Optional<Device> monitorOpt =
+          deviceService.getAllDevices(user).stream()
+              .filter(d -> d.getDeviceType() == DeviceType.POWER_MONITOR)
+              .findFirst();
+
+      monitorOpt.ifPresent(device -> deviceServiceWS.notifyStateRefresh(device.getMqttPrefix()));
+    } catch (Exception e) {
+      // don't fail the main operation
+      logger.error(
+          "Failed to notify device service of settings update for user {}: {}",
+          user.getId(),
+          e.getMessage());
+    }
   }
 }

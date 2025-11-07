@@ -63,7 +63,7 @@ public class DeviceService {
     Device device = DeviceRequestDto.toEntity(null, deviceDto);
     device.setUser(user);
     Device saved = deviceRepository.save(device);
-    deviceServiceWS.notifyDeviceUpdate(saved);
+    deviceServiceWS.notifyStateRefresh(saved.getMqttPrefix());
     return saved;
   }
 
@@ -85,14 +85,19 @@ public class DeviceService {
     Device saved = deviceRepository.save(existingDevice);
 
     String newMqttPrefix = saved.getMqttPrefix();
-
-    if (oldMqttPrefix != null && !oldMqttPrefix.equals(newMqttPrefix)) {
-      logger.info("MQTT prefix changed for device {}. Re-subscribing.", saved.getName());
-      deviceServiceWS.notifyDeviceDelete(oldMqttPrefix);
-      deviceServiceWS.notifyDeviceUpdate(saved);
+    String monitorPrefixForRefresh;
+    if (saved.getDeviceType() == DeviceType.POWER_MONITOR) {
+      monitorPrefixForRefresh = newMqttPrefix;
     } else {
-      logger.info("Device {} updated. Refreshing cache.", saved.getName());
-      deviceServiceWS.notifyDeviceRefresh(saved);
+      monitorPrefixForRefresh = findMonitorPrefixForUser(user);
+    }
+
+    if (monitorPrefixForRefresh != null) {
+      deviceServiceWS.notifyStateRefresh(monitorPrefixForRefresh);
+      if (oldMqttPrefix != null && !oldMqttPrefix.equals(newMqttPrefix)) {
+        logger.info("MQTT prefix changed for device {}. Re-subscribing.", saved.getName());
+        deviceServiceWS.notifyDeviceDelete(oldMqttPrefix);
+      }
     }
 
     return saved;
@@ -111,8 +116,12 @@ public class DeviceService {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User can only delete own devices");
     }
 
+    String monitorPrefix = findMonitorPrefixForUser(user);
     if (device.getMqttPrefix() != null) {
       deviceServiceWS.notifyDeviceDelete(device.getMqttPrefix());
+    }
+    if (monitorPrefix != null) {
+      deviceServiceWS.notifyStateRefresh(monitorPrefix);
     }
 
     deviceRepository.deleteById(id);
@@ -140,5 +149,13 @@ public class DeviceService {
     List<DeviceResponseDto> allDevices =
         deviceRepository.findAllByUser(user).stream().map(DeviceResponseDto::from).toList();
     return new SystemStateDto(systemSettings, allDevices);
+  }
+
+  private String findMonitorPrefixForUser(User user) {
+    return deviceRepository.findAllByUser(user).stream()
+        .filter(d -> d.getDeviceType() == DeviceType.POWER_MONITOR)
+        .map(Device::getMqttPrefix)
+        .findFirst()
+        .orElse(null);
   }
 }

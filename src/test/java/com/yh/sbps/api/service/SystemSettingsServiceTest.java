@@ -8,6 +8,7 @@ import com.yh.sbps.api.dto.SystemSettingsDto;
 import com.yh.sbps.api.entity.Role;
 import com.yh.sbps.api.entity.SystemSettings;
 import com.yh.sbps.api.entity.User;
+import com.yh.sbps.api.integration.DeviceServiceWS;
 import com.yh.sbps.api.repository.SystemSettingsRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SystemSettingsServiceTest {
 
   @Mock private SystemSettingsRepository systemSettingsRepository;
+  @Mock private DeviceService deviceService;
+  @Mock private DeviceServiceWS deviceServiceWS;
   private SystemSettingsService systemSettingsService;
   private User testUser;
   private SystemSettings testSettings;
@@ -29,7 +32,8 @@ class SystemSettingsServiceTest {
 
   @BeforeEach
   void setUp() {
-    systemSettingsService = new SystemSettingsService(systemSettingsRepository);
+    systemSettingsService =
+        new SystemSettingsService(systemSettingsRepository, deviceService, deviceServiceWS);
 
     testUser = new User("test@example.com", "test", "password", Role.USER);
     testUser.setId(1L);

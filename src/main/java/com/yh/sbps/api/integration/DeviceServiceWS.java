@@ -63,22 +63,20 @@ public class DeviceServiceWS {
         .subscribe();
   }
 
-  public void notifyDeviceRefresh(Device device) {
-    String url = deviceServiceUrl + "/api/device/internal/refresh";
-    logger.info("Notifying device-service (REFRESH) for device: {}", device.getName());
+  public void notifyStateRefresh(String mqttPrefix) {
+    String url = deviceServiceUrl + "/api/device/internal/refresh-state";
+    logger.info("Notifying device-service (REFRESH STATE) for prefix: {}", mqttPrefix);
     webClient
         .post()
         .uri(url)
         .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(device)
+        .bodyValue(mqttPrefix)
         .retrieve()
         .bodyToMono(Void.class)
         .doOnError(
             error ->
                 logger.error(
-                    "Failed to notify device-service about device refresh: {}",
-                    device.getName(),
-                    error))
+                    "Failed to notify device-service about state refresh: {}", mqttPrefix, error))
         .subscribe();
   }
 

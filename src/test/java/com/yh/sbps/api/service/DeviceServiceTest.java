@@ -150,7 +150,7 @@ class DeviceServiceTest {
     when(deviceRepository.save(any(Device.class))).thenReturn(newDevice);
     when(deviceRepository.existsByUserAndDeviceType(eq(testUser), eq(DeviceType.POWER_MONITOR)))
         .thenReturn(false);
-    doNothing().when(deviceServiceWS).notifyDeviceUpdate(any(Device.class));
+    doNothing().when(deviceServiceWS).notifyStateRefresh("new/device");
 
     // Act
     Device result = deviceService.saveDevice(deviceDto, testUser);
@@ -158,7 +158,7 @@ class DeviceServiceTest {
     // Assert
     assertNotNull(result);
     verify(deviceRepository).save(any(Device.class));
-    verify(deviceServiceWS).notifyDeviceUpdate(any(Device.class));
+    verify(deviceServiceWS).notifyStateRefresh(any(String.class));
   }
 
   @Test
@@ -174,7 +174,7 @@ class DeviceServiceTest {
 
     when(deviceRepository.findById(1L)).thenReturn(Optional.of(testDevice));
     when(deviceRepository.save(any(Device.class))).thenReturn(testDevice);
-    doNothing().when(deviceServiceWS).notifyDeviceUpdate(any(Device.class));
+    doNothing().when(deviceServiceWS).notifyStateRefresh("updated/prefix");
 
     // Act
     Device result = deviceService.updateDevice(1L, updatedDetails, testUser);
@@ -187,7 +187,7 @@ class DeviceServiceTest {
     assertEquals(2, testDevice.getPriority());
     assertEquals(2000, testDevice.getWattage());
     verify(deviceRepository).save(testDevice);
-    verify(deviceServiceWS).notifyDeviceUpdate(testDevice);
+    verify(deviceServiceWS).notifyStateRefresh("updated/prefix");
   }
 
   @Test
