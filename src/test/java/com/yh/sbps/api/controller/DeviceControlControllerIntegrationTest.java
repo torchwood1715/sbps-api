@@ -15,6 +15,7 @@ import com.yh.sbps.api.entity.Role;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.integration.DeviceServiceWS;
 import com.yh.sbps.api.service.DeviceService;
+import com.yh.sbps.api.service.PushNotificationService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,6 +43,7 @@ class DeviceControlControllerIntegrationTest {
   @Autowired private ObjectMapper objectMapper;
   @Autowired private DeviceService deviceService;
   @Autowired private DeviceServiceWS deviceServiceWS;
+  @Autowired private PushNotificationService pushNotificationService;
   private User testUser;
   private Device testDevice;
 

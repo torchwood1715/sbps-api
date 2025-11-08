@@ -53,7 +53,7 @@ public class SecurityConfig {
                 auth.requestMatchers("/api/auth/**", "/ws/**")
                     .permitAll()
                     .requestMatchers(
-                        "/api/devices/by-mqtt-prefix/**", "/api/control/internal/device-update")
+                        "/api/devices/by-mqtt-prefix/**", "/api/control/internal/**")
                     .hasRole("SERVICE_USER")
                     .anyRequest()
                     .authenticated())

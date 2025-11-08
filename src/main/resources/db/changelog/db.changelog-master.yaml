@@ -172,3 +172,5 @@ databaseChangeLog:
                   type: INTEGER
                   constraints:
                     nullable: true
+  - include:
+      file: classpath:db/changelog/008-create-push-subscription-table.yaml

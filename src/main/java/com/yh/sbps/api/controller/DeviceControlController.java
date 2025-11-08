@@ -1,11 +1,13 @@
 package com.yh.sbps.api.controller;
 
+import com.yh.sbps.api.dto.BalancerActionDto;
 import com.yh.sbps.api.dto.DeviceStatusUpdateDto;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.Role;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.integration.DeviceServiceWS;
 import com.yh.sbps.api.service.DeviceService;
+import com.yh.sbps.api.service.PushNotificationService;
 import com.yh.sbps.api.service.WebSocketService;
 import java.util.List;
 import java.util.Map;
@@ -23,14 +25,17 @@ public class DeviceControlController {
   private final DeviceService deviceService;
   private final DeviceServiceWS deviceServiceWS;
   private final WebSocketService webSocketService;
+  private final PushNotificationService pushNotificationService;
 
   public DeviceControlController(
       DeviceService deviceService,
       DeviceServiceWS deviceServiceWS,
-      WebSocketService webSocketService) {
+      WebSocketService webSocketService,
+      PushNotificationService pushNotificationService) {
     this.deviceService = deviceService;
     this.deviceServiceWS = deviceServiceWS;
     this.webSocketService = webSocketService;
+    this.pushNotificationService = pushNotificationService;
   }
 
   @PostMapping("/plug/{deviceId}/toggle")
@@ -138,5 +143,12 @@ public class DeviceControlController {
       return ResponseEntity.ok().build();
     }
     return ResponseEntity.badRequest().build();
+  }
+
+  @PostMapping("/internal/balancer-action")
+  public ResponseEntity<Void> receiveBalancerAction(
+      @RequestBody BalancerActionDto actionDto, @AuthenticationPrincipal User serviceUser) {
+    pushNotificationService.notifyUserOfBalancerAction(actionDto);
+    return ResponseEntity.ok().build();
   }
 }

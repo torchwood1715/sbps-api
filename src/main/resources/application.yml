@@ -34,3 +34,9 @@ service-user:
 
 cors:
   allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
+
+webpush:
+  vapid:
+    public-key: ${VAPID_PUBLIC_KEY}
+    private-key: ${VAPID_PRIVATE_KEY}
+    subject: ${VAPID_SUBJECT}

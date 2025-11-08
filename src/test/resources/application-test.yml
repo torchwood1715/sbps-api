@@ -38,3 +38,9 @@ logging:
     reactor.netty.http.client: DEBUG
     com.yh.sbps.api: DEBUG
 
+webpush:
+  vapid:
+    public-key: ${VAPID_PUBLIC_KEY:key}
+    private-key: ${VAPID_PRIVATE_KEY:p_key}
+    subject: ${VAPID_SUBJECT:sub}
+

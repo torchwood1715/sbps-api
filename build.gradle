@@ -32,6 +32,8 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
     implementation 'com.google.cloud:spring-cloud-gcp-starter-sql-postgresql'
     implementation 'org.postgresql:postgresql'
+    implementation 'nl.martijndwars:web-push:5.1.1'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.82'
     compileOnly 'org.projectlombok:lombok:1.18.32'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
 
