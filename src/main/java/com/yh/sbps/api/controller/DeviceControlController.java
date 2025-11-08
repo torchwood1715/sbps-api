@@ -1,6 +1,9 @@
 package com.yh.sbps.api.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yh.sbps.api.dto.BalancerActionDto;
+import com.yh.sbps.api.dto.DeviceStatusDto;
 import com.yh.sbps.api.dto.DeviceStatusUpdateDto;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.Role;
@@ -26,16 +29,19 @@ public class DeviceControlController {
   private final DeviceServiceWS deviceServiceWS;
   private final WebSocketService webSocketService;
   private final PushNotificationService pushNotificationService;
+  private final ObjectMapper objectMapper;
 
   public DeviceControlController(
       DeviceService deviceService,
       DeviceServiceWS deviceServiceWS,
       WebSocketService webSocketService,
-      PushNotificationService pushNotificationService) {
+      PushNotificationService pushNotificationService,
+      ObjectMapper objectMapper) {
     this.deviceService = deviceService;
     this.deviceServiceWS = deviceServiceWS;
     this.webSocketService = webSocketService;
     this.pushNotificationService = pushNotificationService;
+    this.objectMapper = objectMapper;
   }
 
   @PostMapping("/plug/{deviceId}/toggle")
@@ -102,28 +108,30 @@ public class DeviceControlController {
   @GetMapping("/all-statuses")
   public ResponseEntity<?> getAllDeviceStatuses(@AuthenticationPrincipal User user) {
     try {
-      List<Device> devices = deviceService.getAllDevices(user);
+      List<Long> deviceIds = deviceService.getAllDevices(user).stream().map(Device::getId).toList();
 
-      Map<Long, Object> allStatuses =
-          devices.stream()
+      if (deviceIds.isEmpty()) {
+        return ResponseEntity.ok(Map.of());
+      }
+
+      Map<Long, DeviceStatusDto> deviceStatuses = deviceServiceWS.getAllStatuses(deviceIds);
+      Map<Long, Object> responseMap =
+          deviceStatuses.entrySet().stream()
               .collect(
                   Collectors.toMap(
-                      Device::getId,
-                      device -> {
-                        try {
-                          ResponseEntity<?> onlineResp = deviceServiceWS.getOnline(device.getId());
-                          if (Boolean.TRUE.equals(onlineResp.getBody())) {
-                            ResponseEntity<?> statusResp =
-                                deviceServiceWS.getStatus(device.getId());
-                            return statusResp.getBody();
-                          }
-                          return Map.of("online", false);
-                        } catch (Exception e) {
-                          return Map.of("online", false, "error", e.getMessage());
+                      Map.Entry::getKey,
+                      entry -> {
+                        DeviceStatusDto status = entry.getValue();
+                        if (status.isOnline() && status.getStatusJson() != null) {
+                          return status.getStatusJson();
+                        } else {
+                          ObjectNode offlineNode = objectMapper.createObjectNode();
+                          offlineNode.put("online", false);
+                          return offlineNode;
                         }
                       }));
 
-      return ResponseEntity.ok(allStatuses);
+      return ResponseEntity.ok(responseMap);
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }

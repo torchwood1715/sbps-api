@@ -3,14 +3,19 @@ package com.yh.sbps.api.integration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.yh.sbps.api.dto.DeviceStatusDto;
 import com.yh.sbps.api.entity.Device;
+import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
@@ -159,6 +164,28 @@ public class DeviceServiceWS {
       return ResponseEntity.status(e.getStatusCode()).body(convertErrorBodyToJsonNode(e));
     } catch (Exception e) {
       logger.error("Unexpected error calling device-service events for ID {}", deviceId, e);
+      throw new ResponseStatusException(
+          HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error calling device service", e);
+    }
+  }
+
+  public Map<Long, DeviceStatusDto> getAllStatuses(List<Long> deviceIds) {
+    String url = deviceServiceUrl + "/api/device/internal/all-statuses";
+    logger.info("Attempting to call device-service POST internal/all-statuses");
+    try {
+      ParameterizedTypeReference<Map<Long, DeviceStatusDto>> typeRef =
+          new ParameterizedTypeReference<>() {};
+
+      return webClient
+          .post()
+          .uri(url)
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(BodyInserters.fromValue(deviceIds))
+          .retrieve()
+          .bodyToMono(typeRef)
+          .block();
+    } catch (Exception e) {
+      logger.error("Error calling device-service internal/all-statuses", e);
       throw new ResponseStatusException(
           HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error calling device service", e);
     }
