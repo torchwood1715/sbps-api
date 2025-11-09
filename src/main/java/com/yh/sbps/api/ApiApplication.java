@@ -13,7 +13,7 @@ public class ApiApplication {
   }
 
   @Bean
-  public WebClient webClient(WebClient.Builder builder) {
-    return builder.build();
+  public WebClient.Builder webClientBuilder() {
+    return WebClient.builder();
   }
 }

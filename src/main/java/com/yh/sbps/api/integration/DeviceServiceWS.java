@@ -5,20 +5,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yh.sbps.api.dto.DeviceStatusDto;
 import com.yh.sbps.api.entity.Device;
+import com.yh.sbps.api.entity.Role;
+import com.yh.sbps.api.entity.User;
+import com.yh.sbps.api.repository.UserRepository;
+import com.yh.sbps.api.service.JwtService;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ClientRequest;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Component
 public class DeviceServiceWS {
@@ -27,11 +36,50 @@ public class DeviceServiceWS {
   private final WebClient webClient;
   private final String deviceServiceUrl;
   private final ObjectMapper objectMapper;
+  private final JwtService jwtService;
+  private final UserRepository userRepository;
 
-  public DeviceServiceWS(WebClient webClient, @Value("${device.url}") String deviceServiceUrl) {
-    this.webClient = webClient;
+  public DeviceServiceWS(
+      WebClient.Builder webClientBuilder,
+      @Value("${device.url}") String deviceServiceUrl,
+      JwtService jwtService,
+      UserRepository userRepository) {
     this.deviceServiceUrl = deviceServiceUrl;
+    this.jwtService = jwtService;
+    this.userRepository = userRepository;
     this.objectMapper = new ObjectMapper();
+    this.webClient =
+        webClientBuilder.baseUrl(deviceServiceUrl).filter(this.serviceUserAuthFilter()).build();
+  }
+
+  private ExchangeFilterFunction serviceUserAuthFilter() {
+    return (clientRequest, next) ->
+        getServiceUserToken()
+            .flatMap(
+                token -> {
+                  ClientRequest authorizedRequest =
+                      ClientRequest.from(clientRequest)
+                          .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                          .build();
+                  return next.exchange(authorizedRequest);
+                })
+            .switchIfEmpty(
+                Mono.error(
+                    new RuntimeException(
+                        "Service user not found, cannot authenticate internal requests")));
+  }
+
+  private Mono<String> getServiceUserToken() {
+    return Mono.fromCallable(
+            () -> {
+              User serviceUser =
+                  userRepository
+                      .findByRole(Role.SERVICE_USER)
+                      .orElseThrow(
+                          () -> new RuntimeException("SERVICE_USER not found in database"));
+              return jwtService.generateToken(serviceUser);
+            })
+        .subscribeOn(Schedulers.boundedElastic());
   }
 
   public void notifyDeviceUpdate(Device device) {
