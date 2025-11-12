@@ -63,7 +63,7 @@ public class DeviceService {
     Device device = DeviceRequestDto.toEntity(null, deviceDto);
     device.setUser(user);
     Device saved = deviceRepository.save(device);
-    deviceServiceWS.notifyStateRefresh(saved.getMqttPrefix());
+    deviceServiceWS.notifyDeviceUpdate(saved);
     return saved;
   }
 
@@ -93,13 +93,13 @@ public class DeviceService {
     }
 
     if (monitorPrefixForRefresh != null) {
-      deviceServiceWS.notifyStateRefresh(monitorPrefixForRefresh);
       if (oldMqttPrefix != null && !oldMqttPrefix.equals(newMqttPrefix)) {
         logger.info("MQTT prefix changed for device {}. Re-subscribing.", saved.getName());
         deviceServiceWS.notifyDeviceDelete(oldMqttPrefix);
+        deviceServiceWS.notifyDeviceUpdate(saved);
       }
+      deviceServiceWS.notifyStateRefresh(monitorPrefixForRefresh);
     }
-
     return saved;
   }
 
