@@ -42,3 +42,8 @@ webpush:
     public-key: ${VAPID_PUBLIC_KEY}
     private-key: ${VAPID_PRIVATE_KEY}
     subject: ${VAPID_SUBJECT}
+
+logging:
+  level:
+    root: WARN
+    com.yh.sbps: ${LOGGING_LEVEL_COM_YH_SBPS:INFO}
