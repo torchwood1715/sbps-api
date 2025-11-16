@@ -150,7 +150,7 @@ class DeviceServiceTest {
     when(deviceRepository.save(any(Device.class))).thenReturn(newDevice);
     when(deviceRepository.existsByUserAndDeviceType(eq(testUser), eq(DeviceType.POWER_MONITOR)))
         .thenReturn(false);
-    doNothing().when(deviceServiceWS).notifyStateRefresh("new/device");
+    doNothing().when(deviceServiceWS).notifyDeviceUpdate(newDevice);
 
     // Act
     Device result = deviceService.saveDevice(deviceDto, testUser);
@@ -158,7 +158,7 @@ class DeviceServiceTest {
     // Assert
     assertNotNull(result);
     verify(deviceRepository).save(any(Device.class));
-    verify(deviceServiceWS).notifyStateRefresh(any(String.class));
+    verify(deviceServiceWS).notifyDeviceUpdate(any(Device.class));
   }
 
   @Test

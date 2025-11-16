@@ -1,6 +1,7 @@
 package com.yh.sbps.api.dto;
 
 import com.yh.sbps.api.entity.Device;
+import com.yh.sbps.api.entity.DeviceProvider;
 import com.yh.sbps.api.entity.DeviceType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,11 +24,16 @@ public class DeviceRequestDto {
   @NotNull(message = "Device type is required")
   private DeviceType deviceType;
 
+  @NotNull(message = "Provider is required")
+  private DeviceProvider provider;
+
   @PositiveOrZero private Integer priority = 0;
 
   @PositiveOrZero private Integer wattage;
 
   private boolean preventDowntime;
+
+  private boolean isNonEssential;
 
   @PositiveOrZero private Integer maxDowntimeMinutes;
 
@@ -35,11 +41,13 @@ public class DeviceRequestDto {
 
   public static Device toEntity(Device device, DeviceRequestDto dto) {
     if (device == null) {
-        device = new Device();
+      device = new Device();
     }
     device.setName(dto.getName());
     device.setMqttPrefix(dto.getMqttPrefix());
     device.setDeviceType(dto.getDeviceType());
+    device.setProvider(dto.getProvider());
+    device.setNonEssential(dto.isNonEssential());
     device.setPriority(dto.getPriority());
     device.setWattage(dto.getWattage());
     device.setPreventDowntime(dto.isPreventDowntime());

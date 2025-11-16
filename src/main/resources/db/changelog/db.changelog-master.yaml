@@ -174,3 +174,5 @@ databaseChangeLog:
                     nullable: true
   - include:
       file: classpath:db/changelog/008-create-push-subscription-table.yaml
+  - include:
+      file: classpath:db/changelog/009-features.yaml

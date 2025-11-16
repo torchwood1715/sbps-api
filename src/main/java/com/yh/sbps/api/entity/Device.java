@@ -26,6 +26,13 @@ public class Device {
   @Column(name = "device_type", nullable = false)
   private DeviceType deviceType;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "provider", nullable = false)
+  private DeviceProvider provider = DeviceProvider.SHELLY;
+
+  @Column(name = "is_non_essential", nullable = false)
+  private boolean isNonEssential = false;
+
   @Column(name = "priority")
   private Integer priority = 0;
 

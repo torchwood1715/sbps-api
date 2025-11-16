@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-add-provider-and-features
+      author: system
+      changes:
+        - addColumn:
+            tableName: devices
+            columns:
+              - column:
+                  name: provider
+                  type: VARCHAR(50)
+                  defaultValue: "SHELLY"
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: devices
+            columns:
+              - column:
+                  name: is_non_essential
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: system_settings
+            columns:
+              - column:
+                  name: is_vacation_mode_enabled
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: system_settings
+            columns:
+              - column:
+                  name: power_save_limit_watts
+                  type: INTEGER
+                  defaultValueNumeric: 1500
+                  constraints:
+                    nullable: true

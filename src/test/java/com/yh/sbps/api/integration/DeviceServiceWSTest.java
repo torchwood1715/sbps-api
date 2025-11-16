@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.DeviceType;
+import com.yh.sbps.api.entity.User;
+import com.yh.sbps.api.repository.UserRepository;
+import com.yh.sbps.api.service.JwtService;
 import java.io.IOException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -15,15 +18,21 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
+@ExtendWith(MockitoExtension.class)
 @DisplayName("DeviceServiceWS Unit Tests")
 class DeviceServiceWSTest {
 
+  @Mock private JwtService jwtService;
+  @Mock private UserRepository userRepository;
   private MockWebServer mockWebServer;
   private DeviceServiceWS deviceServiceWS;
   private ObjectMapper objectMapper;
@@ -34,10 +43,13 @@ class DeviceServiceWSTest {
     mockWebServer.start();
 
     String baseUrl = mockWebServer.url("/").toString();
-    WebClient webClient = WebClient.builder().baseUrl(baseUrl).build();
+    WebClient.Builder webClientBuilder = WebClient.builder().baseUrl(baseUrl);
 
-    deviceServiceWS = new DeviceServiceWS(webClient, baseUrl);
+    deviceServiceWS = new DeviceServiceWS(webClientBuilder, baseUrl, jwtService, userRepository);
     objectMapper = new ObjectMapper();
+
+    when(userRepository.findByRole(any())).thenReturn(java.util.Optional.of(mock(User.class)));
+    when(jwtService.generateToken(any())).thenReturn("mockedToken");
   }
 
   @AfterEach

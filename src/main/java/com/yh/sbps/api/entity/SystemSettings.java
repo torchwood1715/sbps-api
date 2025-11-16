@@ -25,6 +25,12 @@ public class SystemSettings {
   @Column(name = "overload_cooldown_seconds")
   private Integer overloadCooldownSeconds;
 
+  @Column(name = "power_save_limit_watts")
+  private Integer powerSaveLimitWatts;
+
+  @Column(name = "is_vacation_mode_enabled", nullable = false)
+  private boolean isVacationModeEnabled = false;
+
   @OneToOne
   @JoinColumn(name = "user_id", referencedColumnName = "id")
   private User user;
@@ -33,10 +39,13 @@ public class SystemSettings {
       Integer powerLimitWatts,
       Integer powerOnMarginWatts,
       Integer overloadCooldownSeconds,
+      Integer powerSaveLimitWatts,
       User user) {
     this.powerLimitWatts = powerLimitWatts;
     this.powerOnMarginWatts = powerOnMarginWatts;
     this.overloadCooldownSeconds = overloadCooldownSeconds;
+    this.powerSaveLimitWatts = powerSaveLimitWatts;
+    this.isVacationModeEnabled = false;
     this.user = user;
   }
 }

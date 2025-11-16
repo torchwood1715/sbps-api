@@ -7,12 +7,11 @@ import com.yh.sbps.api.entity.SystemSettings;
 import com.yh.sbps.api.entity.User;
 import com.yh.sbps.api.integration.DeviceServiceWS;
 import com.yh.sbps.api.repository.SystemSettingsRepository;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class SystemSettingsService {
@@ -21,6 +20,7 @@ public class SystemSettingsService {
   private static final Integer DEFAULT_POWER_LIMIT_WATTS = 3500;
   private static final Integer DEFAULT_POWER_ON_MARGIN_WATTS = 500;
   private static final Integer DEFAULT_OVERLOAD_COOLDOWN_SECONDS = 30;
+  private static final Integer DEFAULT_POWER_SAVE_LIMIT_WATTS = 1500;
   private static final Logger logger = LoggerFactory.getLogger(SystemSettingsService.class);
   private final SystemSettingsRepository systemSettingsRepository;
   private final DeviceService deviceService;
@@ -57,6 +57,7 @@ public class SystemSettingsService {
             DEFAULT_POWER_LIMIT_WATTS,
             DEFAULT_POWER_ON_MARGIN_WATTS,
             DEFAULT_OVERLOAD_COOLDOWN_SECONDS,
+            DEFAULT_POWER_SAVE_LIMIT_WATTS,
             user);
     return systemSettingsRepository.save(defaultSettings);
   }

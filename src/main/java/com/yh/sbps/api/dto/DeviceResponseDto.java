@@ -1,6 +1,7 @@
 package com.yh.sbps.api.dto;
 
 import com.yh.sbps.api.entity.Device;
+import com.yh.sbps.api.entity.DeviceProvider;
 import com.yh.sbps.api.entity.DeviceType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,8 +15,10 @@ public class DeviceResponseDto {
   private String name;
   private String mqttPrefix;
   private DeviceType deviceType;
+  private DeviceProvider provider;
   private Integer priority;
   private Integer wattage;
+  private boolean isNonEssential;
   private boolean preventDowntime;
   private Integer maxDowntimeMinutes;
   private Integer minUptimeMinutes;
@@ -27,6 +30,8 @@ public class DeviceResponseDto {
     dto.setName(device.getName());
     dto.setMqttPrefix(device.getMqttPrefix());
     dto.setDeviceType(device.getDeviceType());
+    dto.setProvider(device.getProvider());
+    dto.setNonEssential(device.isNonEssential());
     dto.setPriority(device.getPriority());
     dto.setWattage(device.getWattage());
     dto.setPreventDowntime(device.isPreventDowntime());

@@ -13,12 +13,16 @@ public class SystemSettingsDto {
   @PositiveOrZero private Integer powerLimitWatts;
   @PositiveOrZero private Integer powerOnMarginWatts;
   @PositiveOrZero private Integer overloadCooldownSeconds;
+  @PositiveOrZero private Integer powerSaveLimitWatts;
+  private Boolean isVacationModeEnabled;
 
   public static SystemSettingsDto fromEntity(SystemSettings systemSettings) {
     SystemSettingsDto dto = new SystemSettingsDto();
     dto.setPowerLimitWatts(systemSettings.getPowerLimitWatts());
     dto.setPowerOnMarginWatts(systemSettings.getPowerOnMarginWatts());
     dto.setOverloadCooldownSeconds(systemSettings.getOverloadCooldownSeconds());
+    dto.setPowerSaveLimitWatts(systemSettings.getPowerSaveLimitWatts());
+    dto.setIsVacationModeEnabled(systemSettings.isVacationModeEnabled());
     return dto;
   }
 
@@ -26,5 +30,9 @@ public class SystemSettingsDto {
     systemSettings.setPowerLimitWatts(dto.getPowerLimitWatts());
     systemSettings.setPowerOnMarginWatts(dto.getPowerOnMarginWatts());
     systemSettings.setOverloadCooldownSeconds(dto.getOverloadCooldownSeconds());
+    systemSettings.setPowerSaveLimitWatts(dto.getPowerSaveLimitWatts());
+    if (dto.getIsVacationModeEnabled() != null) {
+      systemSettings.setVacationModeEnabled(dto.getIsVacationModeEnabled());
+    }
   }
 }
