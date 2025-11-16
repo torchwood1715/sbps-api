@@ -52,18 +52,25 @@ public class DeviceService {
   }
 
   public Device saveDevice(DeviceRequestDto deviceDto, User user) {
-    if (deviceDto.getDeviceType() == DeviceType.POWER_MONITOR) {
+    if (deviceDto.getDeviceType() == DeviceType.POWER_MONITOR
+        || deviceDto.getDeviceType() == DeviceType.GRID_MONITOR) {
+
       boolean monitorExists =
-          deviceRepository.existsByUserAndDeviceType(user, DeviceType.POWER_MONITOR);
+          deviceRepository.existsByUserAndDeviceType(user, deviceDto.getDeviceType());
+
       if (monitorExists) {
         throw new ResponseStatusException(
-            HttpStatus.CONFLICT, "Power monitor already exists for this user.");
+            HttpStatus.CONFLICT,
+            "Монітор типу '" + deviceDto.getDeviceType() + "' вже існує для цього користувача.");
       }
     }
     Device device = DeviceRequestDto.toEntity(null, deviceDto);
     device.setUser(user);
     Device saved = deviceRepository.save(device);
     deviceServiceWS.notifyDeviceUpdate(saved);
+    if (saved.getDeviceType() == DeviceType.POWER_MONITOR) {
+      deviceServiceWS.notifyStateRefresh(saved.getMqttPrefix());
+    }
     return saved;
   }
 
@@ -79,27 +86,45 @@ public class DeviceService {
     if (!existingDevice.getUser().getId().equals(user.getId())) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not own this device");
     }
+
+    DeviceType newType = deviceDetailsDto.getDeviceType();
+    DeviceType oldType = existingDevice.getDeviceType();
+
+    if (newType != oldType
+        && (newType == DeviceType.POWER_MONITOR || newType == DeviceType.GRID_MONITOR)) {
+      boolean monitorExists = deviceRepository.existsByUserAndDeviceType(user, newType);
+      if (monitorExists) {
+        throw new ResponseStatusException(
+            HttpStatus.CONFLICT,
+            "Монітор типу '" + newType + "' вже існує. Ви не можете змінити тип цього пристрою.");
+      }
+    }
+
     String oldMqttPrefix = existingDevice.getMqttPrefix();
 
     DeviceRequestDto.toEntity(existingDevice, deviceDetailsDto);
     Device saved = deviceRepository.save(existingDevice);
 
     String newMqttPrefix = saved.getMqttPrefix();
-    String monitorPrefixForRefresh;
+    String monitorPrefixForRefresh = null;
+    if (oldMqttPrefix != null && !oldMqttPrefix.equals(newMqttPrefix)) {
+      logger.info("MQTT prefix changed for device {}. Re-subscribing.", saved.getName());
+      deviceServiceWS.notifyDeviceDelete(oldMqttPrefix);
+      deviceServiceWS.notifyDeviceUpdate(saved);
+    }
+
     if (saved.getDeviceType() == DeviceType.POWER_MONITOR) {
       monitorPrefixForRefresh = newMqttPrefix;
+    } else if (oldType == DeviceType.POWER_MONITOR && newType != DeviceType.POWER_MONITOR) {
+      deviceServiceWS.notifyDeviceDelete(oldMqttPrefix);
     } else {
       monitorPrefixForRefresh = findMonitorPrefixForUser(user);
     }
 
     if (monitorPrefixForRefresh != null) {
-      if (oldMqttPrefix != null && !oldMqttPrefix.equals(newMqttPrefix)) {
-        logger.info("MQTT prefix changed for device {}. Re-subscribing.", saved.getName());
-        deviceServiceWS.notifyDeviceDelete(oldMqttPrefix);
-        deviceServiceWS.notifyDeviceUpdate(saved);
-      }
       deviceServiceWS.notifyStateRefresh(monitorPrefixForRefresh);
     }
+
     return saved;
   }
 
