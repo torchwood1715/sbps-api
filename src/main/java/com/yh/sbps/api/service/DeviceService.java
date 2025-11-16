@@ -61,7 +61,7 @@ public class DeviceService {
       if (monitorExists) {
         throw new ResponseStatusException(
             HttpStatus.CONFLICT,
-            "Монітор типу '" + deviceDto.getDeviceType() + "' вже існує для цього користувача.");
+            "Monitor type '" + deviceDto.getDeviceType() + "' is already exists for user.");
       }
     }
     Device device = DeviceRequestDto.toEntity(null, deviceDto);
