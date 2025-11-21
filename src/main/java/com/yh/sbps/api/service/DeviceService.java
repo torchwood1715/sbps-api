@@ -176,6 +176,14 @@ public class DeviceService {
     return new SystemStateDto(systemSettings, allDevices);
   }
 
+  public String getMonitorPrefixForUser(User user) {
+    return deviceRepository.findAllByUser(user).stream()
+        .filter(d -> d.getDeviceType() == DeviceType.POWER_MONITOR)
+        .map(Device::getMqttPrefix)
+        .findFirst()
+        .orElse(null);
+  }
+
   private String findMonitorPrefixForUser(User user) {
     return deviceRepository.findAllByUser(user).stream()
         .filter(d -> d.getDeviceType() == DeviceType.POWER_MONITOR)

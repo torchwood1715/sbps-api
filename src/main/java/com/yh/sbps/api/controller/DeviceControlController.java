@@ -3,6 +3,7 @@ package com.yh.sbps.api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yh.sbps.api.dto.BalancerActionDto;
+import com.yh.sbps.api.dto.BlackoutStatsDto;
 import com.yh.sbps.api.dto.DeviceStatusDto;
 import com.yh.sbps.api.dto.DeviceStatusUpdateDto;
 import com.yh.sbps.api.entity.Device;
@@ -158,5 +159,14 @@ public class DeviceControlController {
       @RequestBody BalancerActionDto actionDto, @AuthenticationPrincipal User serviceUser) {
     pushNotificationService.notifyUserOfBalancerAction(actionDto);
     return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/system-stats")
+  public ResponseEntity<BlackoutStatsDto> getSystemStats(@AuthenticationPrincipal User user) {
+    String monitorPrefix = deviceService.getMonitorPrefixForUser(user);
+    if (monitorPrefix == null) {
+      return ResponseEntity.ok(new BlackoutStatsDto(false, 0, 0));
+    }
+    return ResponseEntity.ok(deviceServiceWS.getBlackoutStats(monitorPrefix));
   }
 }

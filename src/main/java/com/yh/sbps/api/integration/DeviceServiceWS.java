@@ -3,6 +3,7 @@ package com.yh.sbps.api.integration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.yh.sbps.api.dto.BlackoutStatsDto;
 import com.yh.sbps.api.dto.DeviceStatusDto;
 import com.yh.sbps.api.entity.Device;
 import com.yh.sbps.api.entity.Role;
@@ -236,6 +237,16 @@ public class DeviceServiceWS {
       logger.error("Error calling device-service internal/all-statuses", e);
       throw new ResponseStatusException(
           HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error calling device service", e);
+    }
+  }
+
+  public BlackoutStatsDto getBlackoutStats(String mqttPrefix) {
+    String url = deviceServiceUrl + "/api/device/internal/blackout-stats?mqttPrefix=" + mqttPrefix;
+    try {
+      return webClient.get().uri(url).retrieve().bodyToMono(BlackoutStatsDto.class).block();
+    } catch (Exception e) {
+      logger.error("Error getting blackout stats for prefix {}", mqttPrefix, e);
+      return new BlackoutStatsDto(false, 0, 0);
     }
   }
 
